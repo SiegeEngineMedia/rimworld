@@ -1,0 +1,14 @@
+﻿{
+  "key": "rimworld/schedule-map",
+  "title": "RimWorld TimeAssignmentDef -> Glue Schedule-Slot Mode Adapter",
+  "description": "Maps RimWorld's real TimeAssignmentDef.defName values (verified against the installed 1.6.4871 Data/Core/Defs/Misc/TimeAssignmentDefs/TimeAssignments.xml on this machine: Anything/Work/Joy/Sleep) to the hourSlots mode vocabulary used by colony/pawn-schedule-templates.json, already relocated into the glue monorepo at schemas/seeds/actors/schedule/pawn-schedule-templates.json by the Zomboid Z-1 lane (commit f40f3d710). This is a near-exact 1:1 lowercase mapping -- strong, concrete evidence that pawn-schedule-templates.json's 'work'/'joy'/'sleep'/'anything' vocabulary really did originate as RimWorld's own TimeAssignmentDef labels, not a coincidence of naming.",
+  "provider": "glue-rimworld",
+  "version": "1.0.0",
+  "scheduleMappings": [
+    { "rimworldTimeAssignmentDef": "Sleep", "glueScheduleMode": "sleep" },
+    { "rimworldTimeAssignmentDef": "Work", "glueScheduleMode": "work" },
+    { "rimworldTimeAssignmentDef": "Joy", "glueScheduleMode": "joy" },
+    { "rimworldTimeAssignmentDef": "Anything", "glueScheduleMode": "anything" }
+  ],
+  "notes": "pawn.timetable.GetAssignment(hour).defName is read straight off the real Pawn_TimetableTracker each in-game hour and looked up here; RimworldSeedCatalog falls back to 'anything' for an unrecognized defName (e.g. a modded TimeAssignmentDef) rather than throwing, so a third-party schedule mod degrades gracefully instead of breaking the bridge."
+}

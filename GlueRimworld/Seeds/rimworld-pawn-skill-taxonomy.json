@@ -1,0 +1,26 @@
+﻿{
+  "key": "rimworld/pawn-skill-taxonomy",
+  "title": "RimWorld Pawn Skill Taxonomy (relocated + adapted)",
+  "description": "Relocated from C:\\Users\\joshu\\Projects\\zomboid\\GlueActors\\Contents\\mods\\GlueActors\\media\\data\\seeds\\colony\\pawn-skill-taxonomy.json (Phase A2 convention). This is the one colony/pawn-* file the Zomboid Z-1 lane (glue monorepo commit f40f3d710) did NOT relocate into schemas/seeds/actors -- Z-1 relocated pawn-need-taxonomy, pawn-schedule-templates, and pawn-work-priorities but left pawn-skill-taxonomy behind (it authors no skill-gated candidate in the zomboid-day-tick set, so it wasn't needed for Z-1's scope). Verified verbatim against the real installed RimWorld 1.6.4871 Data/Core/Defs/SkillDefs/Skills.xml on this machine: all 12 keys, gainSources, and gatesWork entries match RimWorld's real SkillDef list exactly (only the JSON 'key' field is adapted here, from the source file's lowercase skillLabel-style key to the real RimWorld SkillDef.defName so this file can be looked up directly against Pawn.skills.GetSkill(SkillDefOf.X)). This file lives in GlueRimworld's own Seeds/ (not glue's schemas/seeds/actors/) because nothing in the shared engine consumes it yet -- it exists so a follow-on RimWorld-specific behavior-candidate seed (skill-gated work verbs, mirroring zomboid-day-labor.json's shape) has real data to skill-gate against, matching colony/pawn-work-priorities.json's skillGate fields already landed in glue.",
+  "provider": "glue-rimworld",
+  "version": "1.0.0",
+  "skills": [
+    { "defName": "Shooting",     "key": "shooting",     "label": "Shooting",     "gainSources": ["hunting", "combat"],                "gatesWork": ["work/hunting"],              "tags": ["combat"] },
+    { "defName": "Melee",        "key": "melee",        "label": "Melee",        "gainSources": ["combat"],                          "gatesWork": [],                            "tags": ["combat"] },
+    { "defName": "Construction", "key": "construction", "label": "Construction", "gainSources": ["work/construction"],               "gatesWork": ["work/construction"],         "tags": ["building"] },
+    { "defName": "Mining",       "key": "mining",       "label": "Mining",       "gainSources": ["work/mining"],                     "gatesWork": ["work/mining"],               "tags": ["extraction"] },
+    { "defName": "Cooking",      "key": "cooking",      "label": "Cooking",      "gainSources": ["work/cooking"],                    "gatesWork": ["work/cooking"],              "tags": ["food"] },
+    { "defName": "Plants",       "key": "plants",       "label": "Plants",       "gainSources": ["work/growing", "work/plant-cutting"], "gatesWork": ["work/growing"],           "tags": ["farming"] },
+    { "defName": "Animals",      "key": "animals",      "label": "Animals",      "gainSources": ["work/handling", "work/hunting"],   "gatesWork": ["work/handling"],             "tags": ["animals"] },
+    { "defName": "Crafting",     "key": "crafting",     "label": "Crafting",     "gainSources": ["work/crafting", "work/smithing", "work/tailoring"], "gatesWork": ["work/crafting", "work/smithing", "work/tailoring"], "tags": ["crafting"] },
+    { "defName": "Artistic",     "key": "artistic",     "label": "Artistic",     "gainSources": ["work/art"],                        "gatesWork": ["work/art"],                  "tags": ["crafting", "morale"] },
+    { "defName": "Medicine",     "key": "medicine",     "label": "Medicine",     "gainSources": ["work/doctor"],                     "gatesWork": ["work/doctor"],               "tags": ["health"] },
+    { "defName": "Social",       "key": "social",       "label": "Social",       "gainSources": ["work/warden", "socializing"],      "gatesWork": ["work/warden"],               "tags": ["social"] },
+    { "defName": "Intellectual", "key": "intellectual", "label": "Intellectual", "gainSources": ["work/research"],                   "gatesWork": ["work/research"],             "tags": ["technology"] }
+  ],
+  "passionMultipliers": {
+    "none":  1.0,
+    "minor": 1.5,
+    "major": 2.0
+  }
+}

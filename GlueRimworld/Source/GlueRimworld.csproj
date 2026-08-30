@@ -1,0 +1,80 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    RimWorld 1.5+ (this machine has 1.6.4871) runs its mod-loaded C# assemblies against
+    Unity's Mono/CoreCLR host at the .NET Standard 2.1 API level -- NOT modern net8.0/net10.0
+    CoreCLR like glue's own runtimes/csharp (GlueCore/GlueFp/GlueServer, which multi-target
+    net8.0;net10.0). A net8.0/net10.0 class library cannot be loaded in-process by RimWorld's
+    host the way vintage-actors loads GlueCore.dll/GlueFp.dll directly (Vintage Story's own
+    server process is itself modern .NET, so that in-process reference works there).
+    GlueRimworld therefore stays on netstandard2.1 and talks to the glue engine
+    OUT OF PROCESS over the glue-runtime-host HTTP transport (127.0.0.1, POST /api/execute)
+    instead of referencing GlueCore/GlueFp/GlueServer assemblies directly. See
+    Source/GlueBridgeClient.cs and NEXT_STEPS.md for the full rationale.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>GlueRimworld</AssemblyName>
+    <RootNamespace>GlueRimworld</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>..\Assemblies\</OutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+
+    <!-- Real local RimWorld install found on this machine; override via -p:RimWorldManagedDir=... elsewhere. -->
+    <RimWorldManagedDir Condition="'$(RimWorldManagedDir)' == '' And Exists('C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed')">C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed</RimWorldManagedDir>
+    <RimWorldManagedDir Condition="'$(RimWorldManagedDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed</RimWorldManagedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="GlueRimworldMod.cs" />
+    <Compile Include="GlueBridgeClient.cs" />
+    <Compile Include="PawnBehaviorBridge.cs" />
+    <Compile Include="RimworldSeedCatalog.cs" />
+  </ItemGroup>
+
+  <!-- RimWorld / Unity assemblies -- real HintPaths against the installed game, not invented. -->
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(RimWorldManagedDir)\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(RimWorldManagedDir)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(RimWorldManagedDir)\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!--
+    Harmony is provided at runtime by the separate "Harmony" mod (brrainz.harmony, see
+    About/About.xml modDependencies) rather than bundled here -- the standard RimWorld
+    modding convention, avoiding duplicate-Harmony-load AppDomain conflicts. This
+    PackageReference is compile-time only (Private=false / ExcludeAssets=runtime) so no
+    0Harmony.dll gets copied into Assemblies/.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Lib.Harmony" Version="2.3.6">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+
+    <!--
+      RimWorld's own Managed/ folder does not ship Newtonsoft.Json (verified against the
+      installed 1.6.4871 Managed dir on this machine). Bundled here with Private=true so
+      Newtonsoft.Json.dll lands in Assemblies/ alongside GlueRimworld.dll. KNOWN RISK,
+      disclosed in NEXT_STEPS.md: if another loaded mod bundles a different
+      Newtonsoft.Json version, both can end up in the same AppDomain. A follow-on pass
+      should either ILRepack/rename this reference or depend on a shared Newtonsoft.Json
+      "library" mod instead of bundling.
+    -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+</Project>

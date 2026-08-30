@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <packageId>glue.gluerimworld</packageId>
+  <name>Glue Rimworld</name>
+  <author>glue</author>
+  <url>https://github.com/joshuadaleharris/glue</url>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+      <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>brrainz.harmony</li>
+  </loadAfter>
+  <description>Glue Rimworld is a foothold integration that drives real pawn behavior selection through GLUE's existing declarative actor engine (actor/status/status-tick -> derive-deficits -> behavior/arbiter -> apply-effects). Each colonist's real Need values (Food/Rest/Joy/Comfort/Beauty/Outdoors) and real TimeAssignmentDef schedule slot are mirrored out to a locally-running glue-runtime-host process over loopback HTTP (POST /api/execute), which renders the same actor/behavior candidate chain already proven end-to-end by the Zomboid "one actor's day" lane (Z-1), using colony/pawn-need-taxonomy, colony/pawn-schedule-templates, and colony/pawn-work-priorities seed data that originated as RimWorld's own NeedDef/TimeAssignmentDef/WorkTypeDef vocabulary. This is a foothold, not a full behavior replacement: it observes and logs the engine's selected behavior candidate per pawn per in-game hour rather than overriding RimWorld's own job-giver stack outright. See NEXT_STEPS.md for what a full build-out still needs.</description>
+</ModMetaData>

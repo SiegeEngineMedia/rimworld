@@ -1,0 +1,57 @@
+﻿{
+  "key": "rimworld/need-map",
+  "title": "RimWorld NeedDef -> Glue Need-Key Adapter",
+  "description": "Maps RimWorld's real NeedDef.defName values (verified against the installed 1.6.4871 Data/Core/Defs/NeedDefs/Needs.xml on this machine) to the need-taxonomy keys already relocated into the glue monorepo at schemas/seeds/actors/needs/pawn-need-taxonomy.json (colony/pawn-need-taxonomy, landed by the Zomboid Z-1 lane, commit f40f3d710) and to the 'values'/'rates' map shape actor/runtime/zomboid-day-tick expects (hunger/energy/... deficits derived by actor/status/derive-deficits). This file is genuinely RimWorld-specific glue code (an adapter table), not reusable engine content -- it lives in GlueRimworld's own Seeds/ rather than in the glue monorepo's schemas/seeds/actors/.",
+  "provider": "glue-rimworld",
+  "version": "1.0.0",
+  "needMappings": [
+    {
+      "rimworldNeedDef": "Food",
+      "glueNeedKey": "hunger",
+      "colonyTaxonomyKey": "need/food",
+      "defaultDecayRatePerHour": 0.04,
+      "notes": "Direct 1:1. Need.CurLevel (0..1, higher = more satisfied) maps straight onto glue's 'values.hunger'."
+    },
+    {
+      "rimworldNeedDef": "Rest",
+      "glueNeedKey": "energy",
+      "colonyTaxonomyKey": "need/rest",
+      "defaultDecayRatePerHour": 0.03,
+      "notes": "Direct 1:1."
+    },
+    {
+      "rimworldNeedDef": "Joy",
+      "glueNeedKey": "recreation",
+      "colonyTaxonomyKey": "need/joy",
+      "defaultDecayRatePerHour": 0.02,
+      "notes": "Direct 1:1. Joy is colonistsOnly + adult-only in RimWorld (see Needs.xml); pawns without this need are mapped to a satisfied placeholder (1.0, no deficit pressure) rather than omitted, so derive-deficits never sees a missing key."
+    },
+    {
+      "rimworldNeedDef": "Comfort",
+      "glueNeedKey": "comfort",
+      "colonyTaxonomyKey": "need/comfort",
+      "defaultDecayRatePerHour": 0.01,
+      "notes": "Present in colony/pawn-need-taxonomy but not yet read by any zomboid-day-tick candidate; carried through for a follow-on comfort-seeking behavior-candidate."
+    },
+    {
+      "rimworldNeedDef": "Beauty",
+      "glueNeedKey": "beauty",
+      "colonyTaxonomyKey": "need/beauty",
+      "defaultDecayRatePerHour": 0.005,
+      "notes": "Present in colony/pawn-need-taxonomy but not yet read by any zomboid-day-tick candidate."
+    },
+    {
+      "rimworldNeedDef": "Outdoors",
+      "glueNeedKey": "outdoors",
+      "colonyTaxonomyKey": "need/outdoors",
+      "defaultDecayRatePerHour": 0.015,
+      "notes": "Present in colony/pawn-need-taxonomy but not yet read by any zomboid-day-tick candidate."
+    }
+  ],
+  "unmappedGlueNeeds": [
+    {
+      "colonyTaxonomyKey": "need/social",
+      "notes": "colony/pawn-need-taxonomy.json carries a 'social' need (real for Zomboid/Project Zomboid's social system) that has NO corresponding vanilla RimWorld NeedDef -- confirmed against the real installed Needs.xml (Mood/Food/Rest/Joy/Beauty/Comfort/Outdoors/Indoors/DrugDesire/RoomSize, no Social entry). RimWorld instead expresses social pressure through mood Thoughts (e.g. time-alone thought stages), not a formal Need. GlueRimworldMod currently feeds a constant placeholder (0.5) for 'social' rather than inventing a fake decaying need; a real mapping would read pawn.needs.mood.thoughts.memories for isolation-shaped thoughts -- left for a follow-on pass, disclosed rather than faked as a real signal."
+    }
+  ]
+}
