@@ -67,14 +67,55 @@
 
     <!--
       RimWorld's own Managed/ folder does not ship Newtonsoft.Json (verified against the
-      installed 1.6.4871 Managed dir on this machine). Bundled here with Private=true so
-      Newtonsoft.Json.dll lands in Assemblies/ alongside GlueRimworld.dll. KNOWN RISK,
-      disclosed in NEXT_STEPS.md: if another loaded mod bundles a different
-      Newtonsoft.Json version, both can end up in the same AppDomain. A follow-on pass
-      should either ILRepack/rename this reference or depend on a shared Newtonsoft.Json
-      "library" mod instead of bundling.
+      installed 1.6.4871 Managed dir on this machine). Referenced at compile time only
+      (Private=false / ExcludeAssets=runtime, same pattern as Harmony above) -- the ILRepack
+      step below merges its IL directly into GlueRimworld.dll and internalizes its types, so
+      no separate Newtonsoft.Json.dll is ever copied into Assemblies/. This closes the
+      AppDomain-collision risk previously disclosed here and in NEXT_STEPS.md item 7 (another
+      mod bundling a different Newtonsoft.Json version can no longer collide with this one,
+      since this one is never a standalone loadable assembly to begin with).
     -->
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+
+    <!--
+      ILRepack.Lib.MSBuild.Task drives the merge below (MSBuild-integrated ILRepack, no
+      separate CLI tool/install step needed). Build-time only.
+    -->
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.34">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
+
+  <!--
+    Merge Newtonsoft.Json.dll into GlueRimworld.dll and internalize its types (ILRepack
+    /internalize), then overwrite the primary output with the merged assembly. Runs after
+    Build so $(TargetPath) (GlueRimworld.dll in $(OutputPath) = ../Assemblies/) already
+    exists and Newtonsoft.Json.dll has already been resolved into $(TargetDir) by the
+    PackageReference above (ExcludeAssets=runtime keeps it out of the FINAL Assemblies/
+    output, but it is still present in the intermediate build output ILRepack reads from).
+    Unconditional /internalize (no exclude list) is deliberate: GlueRimworld's own code
+    (GlueBridgeClient.cs et al.) is the only consumer of Newtonsoft.Json's public API here,
+    so nothing outside this assembly needs those types to stay public.
+  -->
+  <Target Name="ILRepackNewtonsoftJson" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">
+    <ItemGroup>
+      <ILRepackInputAssembly Include="$(TargetPath)" />
+      <ILRepackInputAssembly Include="$(IntermediateOutputPath)Newtonsoft.Json.dll" Condition="Exists('$(IntermediateOutputPath)Newtonsoft.Json.dll')" />
+      <ILRepackInputAssembly Include="$(OutDir)Newtonsoft.Json.dll" Condition="'@(ILRepackInputAssembly)' == '$(TargetPath)' And Exists('$(OutDir)Newtonsoft.Json.dll')" />
+    </ItemGroup>
+    <ILRepack
+      Parallel="true"
+      Internalize="true"
+      DebugInfo="true"
+      InputAssemblies="@(ILRepackInputAssembly)"
+      OutputFile="$(TargetPath)"
+      TargetKind="Dll"
+      LibraryPath="$(OutDir);$(RimWorldManagedDir)" />
+    <Delete Files="$(OutDir)Newtonsoft.Json.dll" Condition="Exists('$(OutDir)Newtonsoft.Json.dll')" />
+  </Target>
 
 </Project>

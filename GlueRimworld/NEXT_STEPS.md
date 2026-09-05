@@ -74,9 +74,20 @@ follow-on pass should do next -- "foothold, not full build-out" per the mission.
 6. **Move `GlueBridgeClient.Execute` off the blocking call it is today** onto
    RimWorld's long-event queue or an async pattern, once colonist counts grow past a
    handful.
-7. **Resolve the bundled-`Newtonsoft.Json` collision risk** flagged in
-   `Source/GlueRimworld.csproj` (ILRepack/rename, or depend on a shared
-   Newtonsoft.Json "library" mod) before treating this as more than a foothold.
+7. ~~Resolve the bundled-`Newtonsoft.Json` collision risk~~ **Done, unverified by
+   compilation** (2026-09-05): `Source/GlueRimworld.csproj` now references
+   `Newtonsoft.Json` compile-time-only (`Private=false`/`ExcludeAssets=runtime`,
+   matching the existing Harmony pattern) and adds an `ILRepackNewtonsoftJson`
+   MSBuild target (via `ILRepack.Lib.MSBuild.Task`) that merges and internalizes
+   Newtonsoft.Json's IL directly into `GlueRimworld.dll` after build, then deletes
+   any stray `Newtonsoft.Json.dll` from the output. No separate, publicly-loadable
+   Newtonsoft.Json assembly is produced anymore, so another mod's differently-versioned
+   copy can no longer collide with this one in the same AppDomain. Same caveat as
+   everything else in this pass: this machine has no .NET SDK, so the merge target has
+   not actually been run by a real build -- needs a real compile (see item 2) to confirm
+   ILRepack's exact input-assembly resolution path (`$(IntermediateOutputPath)` vs
+   `$(OutDir)`) actually finds `Newtonsoft.Json.dll` on a real build of this SDK-style
+   netstandard2.1 project before treating this as proven, not just designed.
 8. **Decide whether `GlueBehaviorTickComponent` should ever actually override
    RimWorld's own `JobGiver` stack** (start a real `Job` from the engine's selection)
    versus staying purely observational (motes + logs) -- this pass deliberately chose
