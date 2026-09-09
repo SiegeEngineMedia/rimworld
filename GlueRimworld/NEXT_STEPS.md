@@ -1,95 +1,57 @@
-﻿# Next Steps
+# GlueRimworld release checklist
 
-Honest accounting of what this foothold pass did and did not verify, and what a
-follow-on pass should do next -- "foothold, not full build-out" per the mission.
+GlueRimworld has a compiler-green foothold and a real native Quicktest proof,
+but it is not yet declared publishable. The target remains the same embedded
+Glue Editor/manifest surface as GlueZomboid: shared JSON selects an intent,
+RimWorld supplies facts and native legality, and the adapter only transports,
+projects, admits, observes, and reconciles.
 
-## What is real vs. what is unverified in this pass
+## Current evidence
 
-- **Real, verified against the installed game**: RimWorld 1.6.4871 is actually
-  installed on this machine (`C:\Program Files (x86)\Steam\steamapps\common\RimWorld`).
-  `About/About.xml`, the schedule/need/work-type vocabulary in `Seeds/`, and the
-  `netstandard2.1` target framework decision were all checked against the real
-  `Data/Core/Defs/**` XML and the real `RimWorldWin64_Data/Managed/*.dll` list on this
-  machine, not invented from memory.
-- **Real, verified against the glue monorepo**: `actor/runtime/zomboid-day-tick`'s
-  input/output contract (`{hour, actorId, values, rates, worldFacts, observers,
-  detectionRange}` -> `{scheduleBand, selectedId, selectedVerb, ...}`), the
-  `HttpTransport` `/api/execute` route contract, and the already-landed
-  `colony/pawn-need-taxonomy` / `colony/pawn-schedule-templates` /
-  `colony/pawn-work-priorities` seeds (commit `f40f3d710`) were read directly from the
-  glue monorepo source, not guessed.
-- **NOT verified by compilation or execution**: this machine has no .NET SDK
-  installed (`dotnet` is not on PATH in either shell). `Source/GlueRimworld.csproj`
-  and its four `.cs` files were written to be structurally and API-correct against
-  well-established, stable RimWorld modding APIs (`Verse.Mod`, `GameComponent`,
-  `Pawn.needs`/`Pawn.timetable`, `GenLocalDate.HourOfDay`, `MoteMaker.ThrowText`,
-  Harmony's `Game.FinalizeInit` postfix injection pattern) but were never actually
-  built, so a real compiler has not checked them. Likewise `runtimes/csharp/glue-
-  runtime-host` was never actually started on this machine (also blocked by the
-  missing .NET SDK), so the HTTP round-trip this mod depends on has not been
-  exercised live end-to-end in this pass.
-- **The Rust-side proof this pass DID attempt**: `templates/tests/actor/zomboid-day/
-  deterministic-day-test.json` (the Z-1 lane's own aggregate acceptance test, whose own
-  description discloses it as "rust-verification-pending" -- never actually executed,
-  only schema-validated plus individually hand-probed) was run for real via the
-  sanctioned `template_selected_tests` rail in this pass's worktree. It did not reach a
-  pass/fail verdict: the worktree's cargo build failed on an unrelated, pre-existing
-  break (`manifest process BuildPlan games/tictactoe/lib/tictactoe-play-turn has no
-  source template`), a base-branch issue with nothing to do with actors, Zomboid, or
-  RimWorld. This is disclosed rather than hidden -- it means the strongest available
-  "real trace" evidence for this specific pass is the mechanism-by-mechanism
-  verification already recorded in commit `f40f3d710`'s own message (seven hand-
-  computed tick outcomes, both quirk gates, the shame-appraisal raise), not a fresh
-  run produced here.
+- .NET SDKs are installed and the mod builds deterministically against the
+  installed RimWorld 1.6.4871 assemblies.
+- The consumer manifest inherits the shared RimWorld editor manifest and
+  declares the candidate pack, mount policy, actor/session catalog, and
+  retained mount-session map.
+- The bounded C# host harness passes the three response-curve branches, the
+  RimWorld-namespaced day-tick receipt, and mount heartbeat/readback.
+- A packaged native run has admitted real `eat-meal` work through RimWorld's
+  JobTracker boundary, verified receipts, save/load remount, and canonical
+  renderer projection with zero targeted bridge/host errors.
+- The adapter contains no behavior scorer. Candidate selection is declarative;
+  native JobGiver/WorkGiver checks remain authoritative and fail closed.
 
-## Concrete follow-on work
+## Required release order
 
-1. **Fix or route around the tictactoe build break**, then actually run
-   `deterministic-day-test.json` (and, once it passes, a RimWorld-shaped variant) via
-   `template_selected_tests` -- this closes the Z-1 lane's own disclosed gap and gives
-   GlueRimworld a real, fresh, green Rust trace to point to instead of relying on the
-   Z-1 commit message's hand-verification.
-2. **Install a .NET SDK on a build machine and actually compile** `runtimes/csharp`
-   (`GlueCore`/`GlueFp`/`GlueServer`/`glue-runtime-host`) and `GlueRimworld.csproj`,
-   then run `glue-runtime-host` and load this mod in a real RimWorld save to get an
-   actual in-game trace (log lines + motes) -- the genuine "full build-out" proof this
-   pass could not produce given the missing SDK.
-3. **Author a RimWorld-flavored behavior-candidate seed set** (e.g.
-   `rimworld-work-candidates.json`: work/mining, work/cooking, work/hauling, ... skill-
-   gated via `Seeds/rimworld-pawn-skill-taxonomy.json`), mirroring
-   `zomboid-day-labor.json`'s shape exactly, through the glue MCP session authoring
-   loop (open -> batch -> validate -> save, per the monorepo's `templates/**`
-   fail-closed write policy) -- `zomboid-day-tick`'s candidate verbs today are still
-   Zomboid-flavored (forage/cook/repair-car), which is honest evidence the *engine
-   wiring* works but not yet evidence of RimWorld-*flavored* content.
-4. **Model `has-kitchen`/`has-garage`/`has-car-damage`/daylight properly** instead of
-   the placeholder `worldFacts` in `PawnBehaviorBridge.cs` (real building/affordance
-   lookups via `Map.listerBuildings`, real `GenCelestial` daylight calc) so cook/
-   repair-car-equivalent candidates can actually win a tick rather than structurally
-   losing to wake/forage/sleep.
-5. **Replace the `social`/`safety` need placeholders** with something real (mood
-   Thought-derived isolation signal for social; hazard/manhunter-pawn proximity for
-   safety) -- both are currently honest constants, disclosed as such in
-   `Seeds/rimworld-need-map.json`'s `unmappedGlueNeeds`, not real signals.
-6. **Move `GlueBridgeClient.Execute` off the blocking call it is today** onto
-   RimWorld's long-event queue or an async pattern, once colonist counts grow past a
-   handful.
-7. ~~Resolve the bundled-`Newtonsoft.Json` collision risk~~ **Done, unverified by
-   compilation** (2026-09-05): `Source/GlueRimworld.csproj` now references
-   `Newtonsoft.Json` compile-time-only (`Private=false`/`ExcludeAssets=runtime`,
-   matching the existing Harmony pattern) and adds an `ILRepackNewtonsoftJson`
-   MSBuild target (via `ILRepack.Lib.MSBuild.Task`) that merges and internalizes
-   Newtonsoft.Json's IL directly into `GlueRimworld.dll` after build, then deletes
-   any stray `Newtonsoft.Json.dll` from the output. No separate, publicly-loadable
-   Newtonsoft.Json assembly is produced anymore, so another mod's differently-versioned
-   copy can no longer collide with this one in the same AppDomain. Same caveat as
-   everything else in this pass: this machine has no .NET SDK, so the merge target has
-   not actually been run by a real build -- needs a real compile (see item 2) to confirm
-   ILRepack's exact input-assembly resolution path (`$(IntermediateOutputPath)` vs
-   `$(OutDir)`) actually finds `Newtonsoft.Json.dll` on a real build of this SDK-style
-   netstandard2.1 project before treating this as proven, not just designed.
-8. **Decide whether `GlueBehaviorTickComponent` should ever actually override
-   RimWorld's own `JobGiver` stack** (start a real `Job` from the engine's selection)
-   versus staying purely observational (motes + logs) -- this pass deliberately chose
-   observational-only as the safer foothold scope; a full build-out needs an explicit
-   decision here, not a silent one.
+1. Reconcile the publish checkout with upstream Glue commit `d5d2aa042d`
+   (`fix(csharp): register array insert transform`). The tested local Glue
+   artifact came from `f7e6f582a91d`, which predates that C# registration. Do
+   not duplicate the transform in RimWorld or retain the temporary JSON
+   response-curve rewrite as a package fork.
+2. Rebuild the bounded C# host from the reconciled source. Run the registry
+   test and the original shared `response-curve-eval` template, recording the
+   source commit and built-artifact hash.
+3. Run `Seeds/rimworld-headless-harness.json` through the declared bounded
+   profile and require host ping, zero host errors, all assertions, and release
+   of the loopback port lease.
+4. Build the deterministic mod package and compare every staged manifest,
+   seed, metadata, and assembly hash with the source package.
+5. Run the isolated native Quicktest with the C# host live. Require shared
+   JSON selection, native admission, verified action/readback receipts,
+   retained mount heartbeat, canonical projection, save/load revision
+   continuity, host reconnect, and fail-closed busy/illegal-target behavior.
+6. Validate the inherited editor manifest and exercise the retained editor
+   session through the sanctioned Glue lifecycle (`open -> status -> validate
+   -> save -> close`). Do not substitute direct JSONL or file writes for the
+   declared tooling path.
+7. Re-run the shared RimWorld/Zomboid mount-parity fixture and package only
+   after the parity output is byte-stable across consecutive runs.
+
+## Remaining gates
+
+The detailed evidence, commands, logs, and known harness limitations live in
+[the transform-provenance handoff](docs/handoffs/2026-09-09-csharp-transform-provenance.md).
+Before publication, close the upstream-source/package reconciliation, the
+fresh full shared-template probe, live editor validation, reconnect/replay
+parity, broader native affordance fixtures, and the full-corpus test-harness
+diagnostic. Keep every unsupported native affordance explicitly fail-closed.
