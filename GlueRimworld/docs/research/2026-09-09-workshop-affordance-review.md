@@ -158,6 +158,47 @@ Only after those fixtures fail for a demonstrated adapter gap should a new sourc
 be considered. The source seam must be selected by the manifest/catalog, fail closed
 when absent, and emit evidence even when its hook never fires.
 
+## Online and headless harness options
+
+There is a credible external harness pattern to pair with Glue's existing bounded
+host. [RimBridgeServer](https://github.com/pardeike/RimBridgeServer) runs inside
+RimWorld and exposes semantic inspection, native actions, settings, saves,
+screenshots, and small JSON/Lua automation surfaces. It is designed to stay close
+to RimWorld's logical seams rather than simulate gameplay outside the process.
+
+[GABS](https://github.com/pardeike/GABS) supervises the game process and mirrors the
+in-game bridge into a stable MCP surface. Its configuration-first model declares a
+game once, supports named launch profiles, and re-reads configuration on the next
+call. The bridge contract is deliberately environment-driven: the game-side bridge
+reads `GABP_SERVER_PORT`, `GABP_TOKEN`, `GABS_GAME_ID`, and optional profile context
+from the launched process environment; `bridge.json` is diagnostic state, not a
+discovery fallback. This matches Glue's retained-session and stale-credential
+discipline.
+
+The recommended GlueRimworld harness stack is layered:
+
+| Layer | Tooling | Evidence |
+|---|---|---|
+| Content acquisition | Glue `steamcmd-workshop-command-plan` and `workshop-profile-plan` | isolated Workshop staging, package/dependency/version checks |
+| Declarative runtime | Glue C# bounded host and `rimworld-headless-harness.json` | template results, zero host errors, deterministic receipts |
+| Native no-tick | RimBridgeServer named bridge contract | eligibility, native target resolution, typed rejection |
+| Real simulation | GABS + RimBridgeServer | real ticks, pathing, jobs, settings, saves, UI state |
+| Source/assembly inspection | DecompilerServer or source checkout | exact patched/native call path, no guessed API |
+| Visual/UI verification | semantic bridge/UI screenshot tools | only for behavior that cannot be proven structurally |
+
+This is an online option in the useful engineering sense: the MCP/bridge can expose
+the live game to an AI client, while all gameplay authority stays in the game process.
+It is not a cloud-hosted RimWorld server and should remain loopback-scoped unless a
+separate authenticated deployment boundary is deliberately designed.
+
+The [GABS configuration guide](https://github.com/pardeike/GABS/blob/main/docs/CONFIGURATION.md)
+provides an important rule for GlueRimworld: use `games_status`/`games_connect` to
+observe an existing process, use the declared lifecycle to start and stop it, and
+never recover a stale live endpoint from a cache file. The [RimWorld debugging stack
+guide](https://github.com/pardeike/RimBridgeServer/blob/main/docs/rimworld-mod-debugging-stack.md)
+recommends the same order: install the in-game bridge, configure GABS, start the game
+through the supervisor, then inspect the live session.
+
 ## Download and validation sequence
 
 1. Install SteamCMD outside the live RimWorld Mods directory.
