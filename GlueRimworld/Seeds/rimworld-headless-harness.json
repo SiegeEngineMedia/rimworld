@@ -3,7 +3,7 @@
   "key": "tests/rimworld/headless-glue-surface",
   "title": "RimWorld headless Glue surface gate",
   "provider": "GLUE-Test",
-  "description": "Bounded, no-game-launch harness for the publishable RimWorld surface. It reuses the C# host and isolated template closure, proves declarative response curves, the shared actor day-tick receipt path, and the retained RimWorld mount heartbeat. The runner owns only process lifetime, reference expansion, assertions, and the bounded receipt; gameplay authority remains in the runtime and native adapter.",
+  "description": "Bounded, no-game-launch harness for the publishable RimWorld surface. A checked-in deterministic world fixture feeds the declared template invocation; the resulting structured receipt and assertions prove declarative response curves, the shared actor day-tick path, and retained RimWorld mount heartbeat. The runner owns only process lifetime, reference expansion, assertions, and the bounded receipt; gameplay authority remains in the runtime and native adapter.",
   "host": {
     "profile": "gluerimworld-csharp",
     "templateRoot": "../../../glue/work/csharp-engine-root/templates",
@@ -11,7 +11,16 @@
     "lease": "exclusive-loopback"
   },
   "inputFiles": {
-    "rimworldCandidates": "rimworld-work-candidates.json"
+    "rimworldCandidates": "rimworld-work-candidates.json",
+    "worldFixture": "rimworld-headless-world-fixture.json"
+  },
+  "invocation": {
+    "transport": "http-loopback",
+    "method": "POST",
+    "path": "/api/execute",
+    "templateField": "template",
+    "argsField": "args",
+    "options": { "environment": "server" }
   },
   "testCases": [
     {
@@ -53,14 +62,15 @@
     {
       "name": "rimworld-day-tick-receipt",
       "template": "actor/runtime/zomboid-day-tick",
+      "fixture": { "$file": "worldFixture", "path": "fixtureId" },
       "input": {
-        "hour": 7,
-        "actorId": "rimworld-headless-pawn",
-        "values": { "hunger": 0.9, "energy": 0.8, "recreation": 0.7 },
-        "rates": { "hunger": 0.04, "energy": 0.03, "recreation": 0.02 },
-        "worldFacts": { "has-edible-meal": 1 },
-        "observers": [],
-        "detectionRange": 5,
+        "hour": { "$file": "worldFixture", "path": "actor.hour" },
+        "actorId": { "$file": "worldFixture", "path": "actor.actorId" },
+        "values": { "$file": "worldFixture", "path": "state.values" },
+        "rates": { "$file": "worldFixture", "path": "state.rates" },
+        "worldFacts": { "$file": "worldFixture", "path": "worldFacts" },
+        "observers": { "$file": "worldFixture", "path": "observers" },
+        "detectionRange": { "$file": "worldFixture", "path": "detectionRange" },
         "candidatePack": { "$file": "rimworldCandidates", "path": "candidates" },
         "actionKind": "rimworld-day-tick",
         "receiptKeyPrefix": "workflow-state/actor-execution-receipt/rimworld-day/"
@@ -74,11 +84,12 @@
     {
       "name": "rimworld-mount-heartbeat-readback",
       "template": "actor/runtime/rimworld-session-mount-heartbeat",
+      "fixture": { "$file": "worldFixture", "path": "fixtureId" },
       "input": {
         "sessionKey": "rimworld-headless-session",
         "worldRef": "rimworld-headless-colony",
-        "worldRevision": 3,
-        "observedAt": 1735714800000,
+        "worldRevision": { "$file": "worldFixture", "path": "worldRevision" },
+        "observedAt": { "$file": "worldFixture", "path": "observedAt" },
         "envelope": {
           "sessionId": "rimworld-headless-session",
           "revision": 3,
@@ -97,6 +108,7 @@
   "receipt": {
     "schema": "definition://rimworld-headless-harness-receipt",
     "bounded": true,
+    "fixture": "rimworld-headless/eat-meal-v1",
     "requires": ["host-ping", "zero-host-errors", "all-assertions-pass", "port-lease-released"]
   }
 }

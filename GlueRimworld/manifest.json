@@ -46,6 +46,12 @@
           "schema": "definition://glue-template-test",
           "description": "Bounded no-game-launch execution contract for the shared C# actor, receipt, and retained mount surface."
         },
+        "GLUE_RimworldHeadlessWorldFixture": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-headless-world-fixture.json",
+          "schema": "definition://rimworld-headless-world-fixture",
+          "description": "Deterministic semantic world/actor input consumed by the headless harness; it contains no native RimWorld object handles or gameplay authority."
+        },
         "GLUE_RimworldWorkshopAffordanceCatalog": {
           "type": "seed-catalog",
           "seed": "Seeds/rimworld-workshop-affordance-catalog.json",

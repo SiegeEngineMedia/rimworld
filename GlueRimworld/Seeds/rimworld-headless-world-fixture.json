@@ -1,0 +1,28 @@
+{
+  "$schema": "definition://rimworld-headless-world-fixture",
+  "fixtureId": "rimworld-headless/eat-meal-v1",
+  "runtime": "rimworld",
+  "worldRevision": 3,
+  "observedAt": 1735714800000,
+  "actor": {
+    "actorId": "rimworld-headless-pawn",
+    "hour": 7
+  },
+  "state": {
+    "values": {
+      "hunger": 0.9,
+      "energy": 0.8,
+      "recreation": 0.7
+    },
+    "rates": {
+      "hunger": 0.04,
+      "energy": 0.03,
+      "recreation": 0.02
+    }
+  },
+  "worldFacts": {
+    "has-edible-meal": 1
+  },
+  "observers": [],
+  "detectionRange": 5
+}

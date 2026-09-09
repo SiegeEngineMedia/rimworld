@@ -103,3 +103,14 @@ replay/session parity and broader native affordances remain before a publishable
 the host and mod now have reproducible zero-error Release builds. See
 `NEXT_STEPS.md` for the remaining full-corpus, replay/session, and native-affordance
 gates.
+
+## Declarative headless fixture
+
+`Seeds/rimworld-headless-world-fixture.json` is the deterministic world/actor input
+for `Seeds/rimworld-headless-harness.json`. The harness resolves that fixture,
+invokes the declared template over the bounded Glue host contract
+(`POST /api/execute`), and emits a structured receipt only after the declared
+assertions pass and the loopback lease is released. The fixture contains semantic
+facts and revisions, never RimWorld object handles; native legality remains outside
+the fixture. This makes the harness reusable for later Pick Up And Haul, While
+You're Up, and Dubs Bad Hygiene fixtures without changing the invocation contract.
