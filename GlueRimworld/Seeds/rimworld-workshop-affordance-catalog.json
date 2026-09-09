@@ -1,0 +1,223 @@
+{
+  "$schema": "definition://mod-affordance-review-catalog",
+  "catalogId": "rimworld-workshop-affordances-v1",
+  "runtime": "rimworld",
+  "gameAppId": "294100",
+  "description": "A source-backed review set for enriching GlueRimworld with mechanics and AI affordances observed in current RimWorld Workshop projects. This catalog is metadata and declarative projection guidance only; it does not redistribute third-party mod code or claim native authority.",
+  "downloadPlan": {
+    "templateKey": "mod-management/managers/steamcmd-workshop-command-plan",
+    "profileTemplateKey": "mod-management/catalog/workshop-profile-plan",
+    "login": "anonymous",
+    "validateDownloads": true,
+    "stagingPolicy": "isolated-review-root-not-the-live-rimworld-mods-directory",
+    "workshopIds": [
+      "1561769193",
+      "1279012058",
+      "2034960453",
+      "1541460369",
+      "730936602",
+      "836308268",
+      "2023507013"
+    ],
+    "downloadStatus": "plan-declared-source-checkouts-reviewed-steamcmd-payload-pending"
+  },
+  "reviewProtocol": {
+    "steps": [
+      "resolve-workshop-metadata",
+      "download-to-isolated-staging-root",
+      "read-about-definitions-and-source-hooks",
+      "derive-native-facts-and-affordances",
+      "write-glue-candidate-or-policy-fixture",
+      "run-headless-template-validation",
+      "run-native-hook-and-receipt-fixture",
+      "record-compatibility-and-save-lifecycle-evidence"
+    ],
+    "neverCopy": ["third-party-source-code", "third-party-assets", "native-authority-reimplementation"],
+    "nativeAuthority": ["Need", "JobGiver", "WorkGiver", "ReservationManager", "Reachability", "Pawn_JobTracker", "Scribe", "Map", "ModContentPack"],
+    "glueAuthority": ["candidate-ranking", "policy-selection", "typed-intent", "receipt", "readback", "bounded-session-projection"],
+    "rejectionPolicy": "unsupported-or-illegal-native-action-fails-closed-with-typed-receipt"
+  },
+  "mods": [
+    {
+      "key": "rimworld/common-sense",
+      "name": "Common Sense",
+      "workshopId": "1561769193",
+      "packageId": "avilmask.CommonSense",
+      "workshopUrl": "https://steamcommunity.com/sharedfiles/filedetails/?id=1561769193",
+      "sourceUrl": "https://github.com/catgirlfighter/RimWorld_CommonSense",
+      "reviewedSourceRevision": "03c1cf6",
+      "reviewedSourcePaths": ["1.6/Patches/PackMeal.xml", "1.6/Patches/FoodOptimality.xml", "1.6/Defs/Jobs_Misc.xml"],
+      "mechanics": [
+        "need-aware recreation and drug choices",
+        "clean-before-operating-or-eating",
+        "ingredient and meal spoilage-aware selection",
+        "inventory recovery after interruption"
+      ],
+      "nativeAffordances": ["Need", "FoodUtility", "WorkGiver", "JobDriver", "room-filth", "pawn-inventory"],
+      "glueProjection": {
+        "kind": "behavior-candidate-pack",
+        "candidateFamilies": ["clean-before-task", "choose-spoilage-pressure", "recover-interrupted-inventory", "outdoor-recreation"],
+        "inputs": ["needFacts", "roomFacts", "ingredientFreshness", "inventoryFacts", "scheduleFact"],
+        "actionBoundary": "native-jobgiver-or-workgiver-only",
+        "fixture": "pawn-with-urgent-food-and-dirty-kitchen-prefers-declarative-clean-or-food-intent-but-native-legality-decides"
+      },
+      "risk": "high-hook-interaction; community page documents compatibility issues and vanilla fallback behavior"
+    },
+    {
+      "key": "rimworld/pick-up-and-haul",
+      "name": "Pick Up And Haul",
+      "workshopId": "1279012058",
+      "packageId": "Mehni.PickUpAndHaul",
+      "workshopUrl": "https://steamcommunity.com/sharedfiles/filedetails/?id=1279012058",
+      "sourceUrl": "https://github.com/Mehni/PickUpAndHaul",
+      "reviewedSourceRevision": "09f1fac",
+      "reviewedSourcePaths": ["Source/PickUpAndHaul/WorkGiver_HaulToInventory.cs", "Source/PickUpAndHaul/JobDriver_HaulToInventory.cs", "Source/PickUpAndHaul/CompHauledToInventory.cs"],
+      "mechanics": [
+        "inventory-aware multi-item hauling",
+        "storage-capacity allocation",
+        "reservation and reachability checks",
+        "queued unload destinations"
+      ],
+      "nativeAffordances": ["ThingsPotentiallyNeedingHauling", "CanReserve", "Reachability", "StoreUtility", "MassUtility", "PawnInventory"],
+      "glueProjection": {
+        "kind": "workflow-candidate-with-constraint-trace",
+        "candidateFamilies": ["batch-haul", "inventory-capacity", "nearest-valid-storage"],
+        "inputs": ["haulableFacts", "storageFacts", "carryMass", "reservationFacts", "reachabilityFacts"],
+        "constraints": ["native-reservation", "native-storage-acceptance", "native-carry-capacity", "native-path-validity"],
+        "actionBoundary": "native-haul-job-driver",
+        "fixture": "pawn-batches-two-compatible-stacks-into-one-valid-storage-route-and-reads-back-queue-and-receipt"
+      },
+      "risk": "high-performance-and-compatibility surface; retain bounded search and never reconstruct storage legality in Glue"
+    },
+    {
+      "key": "rimworld/while-youre-up",
+      "name": "While You're Up (with add-on for PUAH)",
+      "workshopId": "2034960453",
+      "packageId": "CodeOptimist.JobsOfOpportunity",
+      "workshopUrl": "https://steamcommunity.com/workshop/filedetails/?id=2034960453",
+      "sourceUrl": "https://github.com/CodeOptimist/rimworld-jobs-of-opportunity",
+      "reviewedSourceRevision": "1c54e7c",
+      "reviewedSourcePaths": ["Source/OpportunityDetour.cs", "Source/BeforeCarryDetour.cs", "Source/Settings.cs"],
+      "mechanics": [
+        "opportunistic hauling along an existing route",
+        "closer-to-job supply and ingredient detours",
+        "path-cost and region-budget modes",
+        "bleeding and caravan safety exclusions"
+      ],
+      "nativeAffordances": ["PathFinder", "TraverseParms", "StoreUtility", "ReservationManager", "JobDef.allowOpportunisticPrefix"],
+      "glueProjection": {
+        "kind": "conditional-detour-affordance",
+        "candidateFamilies": ["haul-on-way", "haul-closer-to-job", "supply-detour"],
+        "inputs": ["currentJobRoute", "haulableFacts", "storageFacts", "healthSafetyFacts", "caravanState"],
+        "constraints": ["max-total-trip-ratio", "max-new-legs-ratio", "path-check-mode", "native-reservation"],
+        "actionBoundary": "native-opportunistic-job-prefix",
+        "fixture": "builder-accepts-only-a-detour-that-reduces-future-distance-and-preserves-the-original-job"
+      },
+      "risk": "source metadata lists older supported-version entries; verify the staged Workshop payload against RimWorld 1.6 before admission"
+    },
+    {
+      "key": "rimworld/better-pawn-control",
+      "name": "Better Pawn Control",
+      "workshopId": "1541460369",
+      "packageId": "VouLT.BetterPawnControl",
+      "workshopUrl": "https://steamcommunity.com/workshop/filedetails/?id=1541460369",
+      "sourceUrl": "https://github.com/voult2/BetterPawnControl",
+      "reviewedSourceRevision": "7cfc247",
+      "reviewedSourcePaths": ["Source/Base/AssignLink.cs", "Source/Base/MapActivePolicy.cs", "Source/Managers/AssignManager.cs"],
+      "mechanics": [
+        "named work and schedule policy bundles",
+        "one-action emergency policy switching",
+        "per-pawn and per-map policy persistence",
+        "new-arrival defaults"
+      ],
+      "nativeAffordances": ["WorkSettings", "TimeAssignmentDef", "AssignManager", "Map", "Scribe_References", "Scribe_Deep"],
+      "glueProjection": {
+        "kind": "policy-bundle-and-session-command",
+        "candidateFamilies": ["policy-activate", "emergency-policy", "arrival-default"],
+        "inputs": ["pawnRoster", "mapKey", "policyCatalog", "lifecycleState"],
+        "constraints": ["native-policy-application", "expected-map-revision", "save-load-reconciliation"],
+        "actionBoundary": "native-work-schedule-assign-application",
+        "fixture": "activate-emergency-policy-on-one-map-save-load-and-read-back-the-same-policy-by-stable-map-key"
+      },
+      "risk": "policy writes are gameplay mutation; Glue may propose and receipt them, but must not own WorkSettings or policy serialization"
+    },
+    {
+      "key": "rimworld/achtung",
+      "name": "Achtung!",
+      "workshopId": "730936602",
+      "packageId": "brrainz.achtung",
+      "workshopUrl": "https://steamcommunity.com/sharedfiles/filedetails/?id=730936602",
+      "sourceUrl": "https://github.com/pardeike/Achtung2",
+      "reviewedSourceRevision": "69b4894",
+      "reviewedSourcePaths": ["README.md", "TESTING.md", "Source/ForcedJob.cs", "Source/BridgeTools/AchtungBridgeTools.cs"],
+      "mechanics": [
+        "force-work commands",
+        "multi-colonist command composition",
+        "formation and line movement",
+        "auto-combat and synchronized commands"
+      ],
+      "nativeAffordances": ["FloatMenuOption", "ForcedJob", "WorkGiver", "Pawn_JobTracker", "RimBridgeServer", "MultiplayerAPI"],
+      "glueProjection": {
+        "kind": "explicit-command-and-observation-contract",
+        "candidateFamilies": ["force-work", "formation-move", "auto-combat-command", "cancel-force-work"],
+        "inputs": ["selectedPawnRefs", "targetCell", "availableNativeOptions", "multiplayerState"],
+        "constraints": ["native-menu-eligibility", "native-target-legality", "multiplayer-synchronization", "save-dependency-warning"],
+        "actionBoundary": "named-native-bridge-contract",
+        "fixture": "resolve-the-visible-lightning-button-contract-at-a-cell-and-read-back-forced-job-target-expansion"
+      },
+      "risk": "intentionally aggressive jobs and optional multiplayer state; adopt as explicit command semantics, not soft autonomous ranking"
+    },
+    {
+      "key": "rimworld/dubs-bad-hygiene",
+      "name": "Dubs Bad Hygiene",
+      "workshopId": "836308268",
+      "packageId": "Dubwise.DubsBadHygiene",
+      "workshopUrl": "https://steamcommunity.com/sharedfiles/filedetails/?id=836308268",
+      "sourceUrl": "https://github.com/Dubwise56/Dubs-Bad-Hygiene",
+      "reviewedSourceRevision": "044358d",
+      "reviewedSourcePaths": ["1.6/Patches/HygienePatches.xml", "1.6/Defs/WorkGiverDefs/WorkGivers.xml", "README.md"],
+      "mechanics": [
+        "hygiene and bladder needs",
+        "water, sewage, irrigation, heating, and waste systems",
+        "urgent and ordinary hygiene JobGivers",
+        "hospitality-aware need satisfaction"
+      ],
+      "nativeAffordances": ["NeedDef", "ThinkTreeDef", "JobGiver", "WorkGiverDef", "ThingDef", "ResearchProjectDef", "MapComponent"],
+      "glueProjection": {
+        "kind": "need-system-and-resource-network",
+        "candidateFamilies": ["use-toilet", "wash", "drink-water", "administer-fluids", "maintain-plumbing"],
+        "inputs": ["hygieneNeed", "bladderNeed", "waterNetworkFacts", "fixtureFacts", "roomFacts", "urgencyBand"],
+        "constraints": ["native-need-availability", "native-fixture-legality", "resource-network-connectivity", "work-capacity"],
+        "actionBoundary": "native-jobgiver-and-workgiver",
+        "fixture": "hygiene-deficit-selects-the-same-candidate-shape-as-food-and-rest-but-native-fixture-and-resource-state-decide-admission"
+      },
+      "risk": "large save-impacting mechanics; Workshop page states it is difficult to remove cleanly from saves"
+    },
+    {
+      "key": "rimworld/vanilla-expanded-framework",
+      "name": "Vanilla Expanded Framework",
+      "workshopId": "2023507013",
+      "packageId": "OskarPotocki.VanillaFactionsExpanded.Core",
+      "workshopUrl": "https://steamcommunity.com/sharedfiles/filedetails/?id=2023507013",
+      "sourceUrl": "https://github.com/Vanilla-Expanded/VanillaExpandedFramework",
+      "reviewedSourceRevision": "f167a81",
+      "reviewedSourcePaths": ["README.md", "Source/VEF", "1.6/Patches"],
+      "mechanics": [
+        "shared custom gizmos and mode switches",
+        "dynamic hediff and health effects",
+        "custom UI and inspector tabs",
+        "animal behavior, gene, comp, event, and quest utilities"
+      ],
+      "nativeAffordances": ["DefModExtension", "ThingComp", "Gizmo", "Hediff", "Quest", "WorldGen", "Harmony"],
+      "glueProjection": {
+        "kind": "extension-capability-catalog",
+        "candidateFamilies": ["toggle-mode", "health-effect", "animal-behavior", "world-event", "custom-inspector"],
+        "inputs": ["native-defs", "comp-state", "event-context", "capability-refs"],
+        "constraints": ["framework-version", "mod-dependency", "native-def-resolution", "save-lifecycle"],
+        "actionBoundary": "framework-owned-native-extension",
+        "fixture": "render-a-capability-and-mode catalog without assuming a framework feature is gameplay-authoritative"
+      },
+      "risk": "framework is a dependency and reference architecture; use its public contracts as integration guidance and do not copy licensed implementation"
+    }
+  ]
+}

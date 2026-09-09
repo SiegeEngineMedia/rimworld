@@ -12,7 +12,9 @@
       "../../glue/templates/functional/games/shared/session-envelope-viewmodel.json",
       "../../glue/templates/functional/games/shared/session-viewmodel-mount.json",
       "../../glue/templates/functional/server/lens-renderer-receipt.json",
-    "../../glue/templates/functional/workflow/actors/persist-actor-execution-receipt.json"
+    "../../glue/templates/functional/workflow/actors/persist-actor-execution-receipt.json",
+    "../../glue/templates/mod-management/managers/steamcmd-workshop-command-plan.json",
+    "../../glue/templates/mod-management/catalog/workshop-profile-plan.json"
   ],
   "resources": {
     "datasources": {
@@ -43,6 +45,12 @@
           "seed": "Seeds/rimworld-headless-harness.json",
           "schema": "definition://glue-template-test",
           "description": "Bounded no-game-launch execution contract for the shared C# actor, receipt, and retained mount surface."
+        },
+        "GLUE_RimworldWorkshopAffordanceCatalog": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-workshop-affordance-catalog.json",
+          "schema": "definition://mod-affordance-review-catalog",
+          "description": "Declarative Steam Workshop review set. It records source-backed mechanics, native authority boundaries, and candidate Glue projections without importing third-party implementation code."
         },
         "GLUE_RimworldMountSessions": {
           "type": "mutable-map",
