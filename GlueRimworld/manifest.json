@@ -1,0 +1,59 @@
+{
+  "name": "glue-rimworld",
+  "description": "RimWorld consumer manifest for the shared Glue Editor actor surface. The editor renders the shared observation/receipt contract while the native mod remains authoritative for RimWorld facts, target legality, reservation, reachability, and job admission.",
+  "extends": [
+    "../../glue/manifests/editor/manifest.rimworld.json"
+  ],
+    "templates": [
+      "../../glue/templates/ui/apps/editor/editor-view-host.json",
+      "../../glue/templates/functional/actor/runtime/zomboid-day-tick.json",
+      "../../glue/templates/functional/actor/runtime/rimworld-session-mount-heartbeat.json",
+      "../../glue/templates/functional/actor/actor-observation-projection.json",
+      "../../glue/templates/functional/games/shared/session-envelope-viewmodel.json",
+      "../../glue/templates/functional/games/shared/session-viewmodel-mount.json",
+      "../../glue/templates/functional/server/lens-renderer-receipt.json",
+    "../../glue/templates/functional/workflow/actors/persist-actor-execution-receipt.json"
+  ],
+  "resources": {
+    "datasources": {
+        "GLUE_RimworldCandidatePack": {
+        "type": "seed-catalog",
+        "seed": "Seeds/rimworld-work-candidates.json",
+          "description": "Declarative RimWorld candidate and native-job mapping pack. Glue ranks semantic intents; the RimWorld adapter owns native legality and admission."
+        },
+        "GLUE_RimworldMountPolicy": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-session-mount-policy.json",
+          "schema": "definition://lens-session-mount-policy",
+          "description": "Declarative RimWorld live-colony mount policy. The shared editor owns projection and session vocabulary; the native adapter owns facts, actions, and lifecycle authority."
+        },
+        "GLUE_RimworldActorSessionCatalog": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-actor-session-catalog.json",
+          "description": "Provider-neutral actor identity, observation, reconciliation, and typed-rejection contract aligned with GlueZomboid. It declares no client-side gameplay mutation."
+        },
+        "GLUE_RimworldPublishValidationProfile": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-publish-validation-profile.json",
+          "schema": "definition://declarative-validation-proof-profile",
+          "description": "Declarative publish proof profile covering the bounded headless harness, native fail-closed admission, retained mount, editor lifecycle, and RimWorld/Zomboid parity."
+        },
+        "GLUE_RimworldHeadlessHarness": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-headless-harness.json",
+          "schema": "definition://glue-template-test",
+          "description": "Bounded no-game-launch execution contract for the shared C# actor, receipt, and retained mount surface."
+        },
+        "GLUE_RimworldMountSessions": {
+          "type": "mutable-map",
+          "description": "In-memory host-side retention for the current RimWorld colony mount heartbeat. Records are projections, never gameplay authority.",
+          "storeConfig": {
+            "protectField": "status",
+            "recencyField": "observedAt",
+            "recordCap": 16,
+            "sizeCapBytes": 4194304
+          }
+        }
+    }
+  }
+}

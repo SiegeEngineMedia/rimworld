@@ -1,0 +1,45 @@
+{
+  "$schema": "definition://declarative-validation-proof-profile",
+  "profileId": "gluerimworld-publish/1.0.0",
+  "validFixtures": [
+    {
+      "fixture": "GlueRimworld/Seeds/rimworld-headless-harness.json",
+      "expectation": "The bounded C# host answers ping, passes every declared JSON assertion, records zero host errors, and releases its loopback lease."
+    },
+    {
+      "fixture": "GlueRimworld/manifest.json",
+      "expectation": "The consumer resolves the shared RimWorld editor manifest, templates, seed catalogs, and bounded retained mount map without missing relative paths."
+    },
+    {
+      "fixture": "GlueRimworld/Seeds/rimworld-session-mount-policy.json",
+      "expectation": "A native-authority session mount has bounded retention, monotonic revision, refresh/readback semantics, and fail-closed late join behavior."
+    },
+    {
+      "fixture": "GlueRimworld/Seeds/rimworld-actor-session-catalog.json",
+      "expectation": "Actor identity, observation, native command authority, reconnect reconciliation, and typed rejection are declared without client gameplay mutation."
+    }
+  ],
+  "rejectionFixtures": [
+    {
+      "fixture": "GlueRimworld/Seeds/rimworld-work-candidates.json#nativeJobMappings",
+      "expectation": "An intent without a declared native JobGiver or WorkGiver mapping, or without a legal native target, is rejected without applying gameplay state."
+    },
+    {
+      "fixture": "GlueRimworld/Seeds/rimworld-actor-session-catalog.json#rejectionPolicy",
+      "expectation": "Duplicate, stale, unavailable, illegal, and reconnect-stale requests return typed persisted outcomes and do not drift native state."
+    }
+  ],
+  "parityTargets": [
+    {
+      "label": "RimWorld/Zomboid shared embedded-editor mount projection",
+      "directFixture": "../glue/templates/tests/games/shared/session-rimworld-zomboid-mount-parity-test.json",
+      "wrappedFixture": "GlueRimworld/Seeds/rimworld-headless-harness.json"
+    }
+  ],
+  "deletionGates": [
+    "No C# behavior scorer or alternate intent-selection engine may be added to the RimWorld adapter.",
+    "No direct JSONL or file write may replace the declared Glue editor lifecycle.",
+    "No native affordance may be admitted without a real RimWorld JobGiver or WorkGiver legality check.",
+    "No package may be called publishable until the built host source commit and artifact hash are recorded and the original shared JSON template passes on that artifact."
+  ]
+}

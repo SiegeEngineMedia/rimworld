@@ -1,0 +1,102 @@
+{
+  "$schema": "definition://glue-template-test",
+  "key": "tests/rimworld/headless-glue-surface",
+  "title": "RimWorld headless Glue surface gate",
+  "provider": "GLUE-Test",
+  "description": "Bounded, no-game-launch harness for the publishable RimWorld surface. It reuses the C# host and isolated template closure, proves declarative response curves, the shared actor day-tick receipt path, and the retained RimWorld mount heartbeat. The runner owns only process lifetime, reference expansion, assertions, and the bounded receipt; gameplay authority remains in the runtime and native adapter.",
+  "host": {
+    "profile": "gluerimworld-csharp",
+    "templateRoot": "../../../glue/work/csharp-engine-root/templates",
+    "port": 8765,
+    "lease": "exclusive-loopback"
+  },
+  "inputFiles": {
+    "rimworldCandidates": "rimworld-work-candidates.json"
+  },
+  "testCases": [
+    {
+      "name": "response-curve-linear",
+      "template": "actor/behavior/response-curve-eval",
+      "input": {
+        "value": 0.7,
+        "curve": { "type": "linear", "slope": 0.45, "yShift": 0.2 }
+      },
+      "assertions": [
+        { "target": "result", "operator": "$eq", "value": 0.515 }
+      ]
+    },
+    {
+      "name": "response-curve-quadratic",
+      "template": "actor/behavior/response-curve-eval",
+      "input": {
+        "value": 0.7,
+        "curve": { "type": "quadratic", "exponent": 2 }
+      },
+      "assertions": [
+        { "target": "result", "operator": "$eq", "value": 0.48999999999999994 }
+      ]
+    },
+    {
+      "name": "response-curve-piecewise",
+      "template": "actor/behavior/response-curve-eval",
+      "input": {
+        "value": 0.7,
+        "curve": {
+          "type": "piecewise",
+          "points": [{ "x": 0, "y": 0 }, { "x": 1, "y": 1 }]
+        }
+      },
+      "assertions": [
+        { "target": "result", "operator": "$eq", "value": 0.7 }
+      ]
+    },
+    {
+      "name": "rimworld-day-tick-receipt",
+      "template": "actor/runtime/zomboid-day-tick",
+      "input": {
+        "hour": 7,
+        "actorId": "rimworld-headless-pawn",
+        "values": { "hunger": 0.9, "energy": 0.8, "recreation": 0.7 },
+        "rates": { "hunger": 0.04, "energy": 0.03, "recreation": 0.02 },
+        "worldFacts": { "has-edible-meal": 1 },
+        "observers": [],
+        "detectionRange": 5,
+        "candidatePack": { "$file": "rimworldCandidates", "path": "candidates" },
+        "actionKind": "rimworld-day-tick",
+        "receiptKeyPrefix": "workflow-state/actor-execution-receipt/rimworld-day/"
+      },
+      "assertions": [
+        { "target": "selectedId", "operator": "$eq", "value": "eat-meal" },
+        { "target": "receiptVerified", "operator": "$eq", "value": true },
+        { "target": "receiptStorageKey", "operator": "$prefix", "value": "workflow-state/actor-execution-receipt/rimworld-day/" }
+      ]
+    },
+    {
+      "name": "rimworld-mount-heartbeat-readback",
+      "template": "actor/runtime/rimworld-session-mount-heartbeat",
+      "input": {
+        "sessionKey": "rimworld-headless-session",
+        "worldRef": "rimworld-headless-colony",
+        "worldRevision": 3,
+        "observedAt": 1735714800000,
+        "envelope": {
+          "sessionId": "rimworld-headless-session",
+          "revision": 3,
+          "authority": "native-rimworld",
+          "projectionSchema": "definition://lens-renderer-projection"
+        }
+      },
+      "assertions": [
+        { "target": "output.sessionKey", "operator": "$eq", "value": "rimworld-headless-session" },
+        { "target": "output.worldRevision", "operator": "$eq", "value": 3 },
+        { "target": "output.persisted.key", "operator": "$eq", "value": "rimworld-headless-session" },
+        { "target": "output.readback.sessionKey", "operator": "$eq", "value": "rimworld-headless-session" }
+      ]
+    }
+  ],
+  "receipt": {
+    "schema": "definition://rimworld-headless-harness-receipt",
+    "bounded": true,
+    "requires": ["host-ping", "zero-host-errors", "all-assertions-pass", "port-lease-released"]
+  }
+}
