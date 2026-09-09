@@ -9,10 +9,14 @@ runtime surface to project, not as code to copy. The companion declarative catal
 revisions, candidate families, authority boundaries, and acceptance fixtures.
 
 The SteamCMD download plan is declared but not yet executed: SteamCMD is not currently
-installed on this machine. Seven public source repositories were downloaded into the
-isolated review root `C:\Users\joshu\Projects\glue\workshop-review-20260909` and
-reviewed at the revisions recorded in the catalog. No third-party source or asset is
-being redistributed by GlueRimworld.
+installed on this machine. The existing local Steam Workshop cache was audited instead:
+six of the seven selected Workshop IDs are present, five with an explicit `1.6`
+payload directory; Better Pawn Control's original ID is absent, and While You're Up's
+cached payload has no `1.6` directory. Seven public source repositories were also
+downloaded into the isolated review root
+`C:\Users\joshu\Projects\glue\workshop-review-20260909` and reviewed at the
+revisions recorded in the catalog. No third-party source or asset is being redistributed
+by GlueRimworld.
 
 ## What the community implementations teach us
 

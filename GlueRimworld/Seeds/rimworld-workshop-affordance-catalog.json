@@ -19,7 +19,16 @@
       "836308268",
       "2023507013"
     ],
-    "downloadStatus": "plan-declared-source-checkouts-reviewed-steamcmd-payload-pending"
+    "downloadStatus": "local-steam-workshop-cache-audited-six-payloads-present-one-id-missing",
+    "payloadAudit": {
+      "cacheRelativeRoot": "steamapps/workshop/content/294100",
+      "presentWorkshopIds": ["1561769193", "1279012058", "2034960453", "730936602", "836308268", "2023507013"],
+      "missingWorkshopIds": ["1541460369"],
+      "presentWith16Directory": ["1561769193", "1279012058", "730936602", "836308268", "2023507013"],
+      "presentWithout16Directory": ["2034960453"],
+      "sourceCheckoutFallback": "public-source-checkout-reviewed-when-workshop-payload-is-compiled-only-or-missing",
+      "reviewedAt": "2026-09-09"
+    }
   },
   "reviewProtocol": {
     "steps": [
@@ -46,6 +55,7 @@
       "workshopUrl": "https://steamcommunity.com/sharedfiles/filedetails/?id=1561769193",
       "sourceUrl": "https://github.com/catgirlfighter/RimWorld_CommonSense",
       "reviewedSourceRevision": "03c1cf6",
+      "payloadStatus": "present-1.6",
       "reviewedSourcePaths": ["1.6/Patches/PackMeal.xml", "1.6/Patches/FoodOptimality.xml", "1.6/Defs/Jobs_Misc.xml"],
       "mechanics": [
         "need-aware recreation and drug choices",
@@ -71,6 +81,7 @@
       "workshopUrl": "https://steamcommunity.com/sharedfiles/filedetails/?id=1279012058",
       "sourceUrl": "https://github.com/Mehni/PickUpAndHaul",
       "reviewedSourceRevision": "09f1fac",
+      "payloadStatus": "present-1.6",
       "reviewedSourcePaths": ["Source/PickUpAndHaul/WorkGiver_HaulToInventory.cs", "Source/PickUpAndHaul/JobDriver_HaulToInventory.cs", "Source/PickUpAndHaul/CompHauledToInventory.cs"],
       "mechanics": [
         "inventory-aware multi-item hauling",
@@ -97,6 +108,7 @@
       "workshopUrl": "https://steamcommunity.com/workshop/filedetails/?id=2034960453",
       "sourceUrl": "https://github.com/CodeOptimist/rimworld-jobs-of-opportunity",
       "reviewedSourceRevision": "1c54e7c",
+      "payloadStatus": "present-but-no-1.6-directory-in-cache-source-changelog-reviewed",
       "reviewedSourcePaths": ["Source/OpportunityDetour.cs", "Source/BeforeCarryDetour.cs", "Source/Settings.cs"],
       "mechanics": [
         "opportunistic hauling along an existing route",
@@ -123,6 +135,7 @@
       "workshopUrl": "https://steamcommunity.com/workshop/filedetails/?id=1541460369",
       "sourceUrl": "https://github.com/voult2/BetterPawnControl",
       "reviewedSourceRevision": "7cfc247",
+      "payloadStatus": "missing-workshop-cache-source-checkout-reviewed",
       "reviewedSourcePaths": ["Source/Base/AssignLink.cs", "Source/Base/MapActivePolicy.cs", "Source/Managers/AssignManager.cs"],
       "mechanics": [
         "named work and schedule policy bundles",
@@ -149,6 +162,7 @@
       "workshopUrl": "https://steamcommunity.com/sharedfiles/filedetails/?id=730936602",
       "sourceUrl": "https://github.com/pardeike/Achtung2",
       "reviewedSourceRevision": "69b4894",
+      "payloadStatus": "present-1.6",
       "reviewedSourcePaths": ["README.md", "TESTING.md", "Source/ForcedJob.cs", "Source/BridgeTools/AchtungBridgeTools.cs"],
       "mechanics": [
         "force-work commands",
@@ -175,6 +189,7 @@
       "workshopUrl": "https://steamcommunity.com/sharedfiles/filedetails/?id=836308268",
       "sourceUrl": "https://github.com/Dubwise56/Dubs-Bad-Hygiene",
       "reviewedSourceRevision": "044358d",
+      "payloadStatus": "present-1.6",
       "reviewedSourcePaths": ["1.6/Patches/HygienePatches.xml", "1.6/Defs/WorkGiverDefs/WorkGivers.xml", "README.md"],
       "mechanics": [
         "hygiene and bladder needs",
@@ -201,6 +216,7 @@
       "workshopUrl": "https://steamcommunity.com/sharedfiles/filedetails/?id=2023507013",
       "sourceUrl": "https://github.com/Vanilla-Expanded/VanillaExpandedFramework",
       "reviewedSourceRevision": "f167a81",
+      "payloadStatus": "present-1.6",
       "reviewedSourcePaths": ["README.md", "Source/VEF", "1.6/Patches"],
       "mechanics": [
         "shared custom gizmos and mode switches",
