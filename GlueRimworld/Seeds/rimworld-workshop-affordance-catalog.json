@@ -19,13 +19,19 @@
       "836308268",
       "2023507013"
     ],
-    "downloadStatus": "local-steam-workshop-cache-audited-six-payloads-present-one-id-missing",
+    "downloadStatus": "steam-workshop-manifest-and-cache-audited-six-payloads-present-one-id-missing",
     "payloadAudit": {
       "cacheRelativeRoot": "steamapps/workshop/content/294100",
+      "steamWorkshopManifest": "steamapps/workshop/appworkshop_294100.acf",
+      "steamWorkshopManifestState": "installed-no-update-required",
       "presentWorkshopIds": ["1561769193", "1279012058", "2034960453", "730936602", "836308268", "2023507013"],
       "missingWorkshopIds": ["1541460369"],
       "presentWith16Directory": ["1561769193", "1279012058", "730936602", "836308268", "2023507013"],
       "presentWithout16Directory": ["2034960453"],
+      "liveModsRelativeRoot": "steamapps/common/RimWorld/Mods",
+      "liveModsObserved": ["brrainz.harmony", "glue.gluerimworld"],
+      "workshopPayloadsRemainOutsideLiveModsDirectory": true,
+      "steamWorkshopLoadPolicy": "Steam-managed-workshop-content-is-selected-by-RimWorld-from-the-workshop-content-root; review staging and test profiles must not copy payloads into the live Mods directory",
       "sourceCheckoutFallback": "public-source-checkout-reviewed-when-workshop-payload-is-compiled-only-or-missing",
       "reviewedAt": "2026-09-09"
     }

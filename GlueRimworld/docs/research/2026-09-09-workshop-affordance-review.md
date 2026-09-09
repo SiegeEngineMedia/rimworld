@@ -8,15 +8,35 @@ runtime surface to project, not as code to copy. The companion declarative catal
 `Seeds/rimworld-workshop-affordance-catalog.json`; it records Workshop IDs, source
 revisions, candidate families, authority boundaries, and acceptance fixtures.
 
-The SteamCMD download plan is declared but not yet executed: SteamCMD is not currently
-installed on this machine. The existing local Steam Workshop cache was audited instead:
-six of the seven selected Workshop IDs are present, five with an explicit `1.6`
-payload directory; Better Pawn Control's original ID is absent, and While You're Up's
-cached payload has no `1.6` directory. Seven public source repositories were also
+The SteamCMD download plan remains declared for reproducible acquisition, but it was
+not needed for this local preflight because RimWorld is already installed through
+Steam. Steam's `appworkshop_294100.acf` records six of the seven selected Workshop IDs
+as installed and the corresponding payloads are present under
+`steamapps/workshop/content/294100`: five have an explicit `1.6` payload directory;
+Better Pawn Control's original ID is absent, and While You're Up's cached payload has
+no `1.6` directory. The game install's `Mods` directory currently contains only
+`brrainz.harmony` and `glue.gluerimworld`; this is expected because Steam-managed
+Workshop content is loaded from the separate Workshop content root. The review keeps
+that live directory untouched and stages copies separately. Seven public source repositories were also
 downloaded into the isolated review root
 `C:\Users\joshu\Projects\glue\workshop-review-20260909` and reviewed at the
 revisions recorded in the catalog. No third-party source or asset is being redistributed
 by GlueRimworld.
+
+### Local Steam preflight
+
+| Check | Result | Review meaning |
+|---|---|---|
+| RimWorld install | Present locally | Native 1.6 assemblies and the game-side test surface are available |
+| Steam Workshop manifest | Present; no update/download required | Steam has a durable installed-item record for the local app |
+| Selected payloads | 6 present, 1 missing | Six can be reviewed from the local cache; Better Pawn Control still needs acquisition or source-only review |
+| Explicit 1.6 payload | 5 present | Common Sense, Pick Up And Haul, Achtung!, Dubs Bad Hygiene, and Vanilla Expanded Framework have 1.6 directories |
+| While You're Up | Cached, supported versions stop at 1.5 | Keep it source-reviewed and fail closed until a 1.6 payload is confirmed |
+| Live `Mods` directory | Harmony + GlueRimworld only | Do not infer Workshop absence from this directory; Steam content is separate |
+
+This gives us a clean build/test baseline: payload presence is an acquisition fact,
+version-directory presence is a compatibility hint, and enabled test-profile membership
+is a separate gate. No review payload is silently enabled in the live game.
 
 ## What the community implementations teach us
 
@@ -205,10 +225,11 @@ through the supervisor, then inspect the live session.
 
 ## Download and validation sequence
 
-1. Install SteamCMD outside the live RimWorld Mods directory.
-2. Execute the declared `steamcmd-workshop-command-plan` for app `294100` into an
-   isolated staging root and verify each Workshop ID, package ID, version directory,
-   dependency, and checksum.
+1. Prefer the installed Steam Workshop cache when the app manifest and payload are
+   present; otherwise install SteamCMD outside the live RimWorld Mods directory.
+2. Execute the declared `steamcmd-workshop-command-plan` for app `294100` only for
+   missing or stale IDs, into an isolated staging root, and verify each Workshop ID,
+   package ID, version directory, dependency, and checksum.
 3. Run the declared `workshop-profile-plan` to normalize the selected set without
    enabling it in the live game.
 4. Compare staged About/Defs/source metadata with the catalog; mark version drift,
