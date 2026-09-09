@@ -51,7 +51,7 @@
   "unmappedGlueNeeds": [
     {
       "colonyTaxonomyKey": "need/social",
-      "notes": "colony/pawn-need-taxonomy.json carries a 'social' need (real for Zomboid/Project Zomboid's social system) that has NO corresponding vanilla RimWorld NeedDef -- confirmed against the real installed Needs.xml (Mood/Food/Rest/Joy/Beauty/Comfort/Outdoors/Indoors/DrugDesire/RoomSize, no Social entry). RimWorld instead expresses social pressure through mood Thoughts (e.g. time-alone thought stages), not a formal Need. GlueRimworldMod currently feeds a constant placeholder (0.5) for 'social' rather than inventing a fake decaying need; a real mapping would read pawn.needs.mood.thoughts.memories for isolation-shaped thoughts -- left for a follow-on pass, disclosed rather than faked as a real signal."
+      "notes": "colony/pawn-need-taxonomy.json carries a 'social' need (real for Zomboid/Project Zomboid's social system) that has NO corresponding vanilla RimWorld NeedDef -- confirmed against the real installed Needs.xml (Mood/Food/Rest/Joy/Beauty/Comfort/Outdoors/Indoors/DrugDesire/RoomSize, no Social entry). RimWorld instead expresses social pressure through thoughts and nearby-pawn affordances, not a formal Need. GlueRimworldMod now exposes a bounded social-availability signal from nearby free colonists and a separate safety signal from RimWorld's active-hostile-threat query; these are disclosed relational facts, not invented decaying Need values."
     }
   ]
 }

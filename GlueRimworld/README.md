@@ -25,6 +25,37 @@ honest, disclosed limits of this pass.
 - The engine's selected behavior candidate is surfaced back onto the pawn visibly
   (a floating `MoteMaker.ThrowText` mote) and in the log, so the wiring is observable
   in-game, not just inert seed data.
+- `Seeds/rimworld-work-candidates.json` is a declarative RimWorld content pack for
+  the shared route. The adapter projects native meal/bed facts and filters the pack
+  before Glue ranks it; native reservation, reachability, designation, and JobGiver
+  legality remain RimWorld-owned. Declarative `nativeJobMappings` cover meal
+  ingestion and construction through RimWorld's `ConstructFinishFrames` WorkGiver;
+  native Job admission is opt-in and fail-closed when a pawn already has a `CurJob`
+  or no legal native target exists.
+- The adapter also exposes bounded relational facts for the shared candidate
+  engine: nearby free-colonist availability as `social`, and RimWorld's active
+  hostile-threat result as `safety`. These are disclosed affordances, not
+  fabricated RimWorld `NeedDef` values; richer thought-derived semantics remain
+  an extensible follow-on.
+- The shared editor composition is declared in
+  `glue/manifests/editor/manifest.rimworld.json`; it reuses the actor manifest
+  and canonical observation/projection/receipt templates. The separate
+  `glue/manifests/gluerimworld-csharp.json` is intentionally a bounded host
+  bootstrap profile, so the editor surface and game process can share semantics
+  without inheriting the full editor catalog into the native host.
+- `Seeds/rimworld-session-mount-policy.json` and the shared
+  `actor/runtime/rimworld-session-mount-heartbeat` template define the live
+  `lens://rimworld` mount declaratively. The adapter supplies native map facts,
+  a stable `rimworld-colony-<mapId>` session key, and lifecycle revisions;
+  Glue persists/readbacks the envelope and then renders the same canonical
+  `lens-renderer-projection` used by GlueZomboid.
+- `Seeds/rimworld-actor-session-catalog.json` supplies the matching provider-neutral
+  actor identity, observation, typed-rejection, and reconnect-reconciliation
+  vocabulary. It keeps client mutation disabled and leaves native authority in
+  RimWorld's adapter hooks.
+- This consumer's entrypoint is `manifest.json`; it inherits the shared editor
+  layer and declares `GLUE_RimworldCandidatePack` as a seed-catalog resource,
+  keeping the candidate pack editor-visible without duplicating it into Glue.
 - `Seeds/` holds the RimWorld-specific adapter tables (`NeedDef` -> glue need key,
   `TimeAssignmentDef` -> schedule mode, and the relocated `pawn-skill-taxonomy.json`
   that the Z-1 lane left behind) -- genuinely new content for this integration, kept
@@ -45,11 +76,25 @@ assemblies out-of-process and exposes exactly the render call this mod needs
 ## Running it (once glue-runtime-host is available)
 
 ```
-# from the glue monorepo
-dotnet run --project runtimes/csharp/glue-runtime-host
+# run from the glue monorepo root
+$env:GLUE_MANIFEST_PATH = "manifests/gluerimworld-csharp.json"
+$env:GLUE_TEMPLATES_ROOT = "work/csharp-engine-root/templates"
+dotnet run -c Release --project runtimes/csharp/glue-runtime-host
 # then load this mod in RimWorld and start/load a colony
 ```
 
-See `NEXT_STEPS.md` for why this could not be built or run end-to-end on this machine
-in this pass (no local .NET SDK), and what that means for the strength of the claim
-"wired end-to-end."
+The native C# lane is now buildable on this machine: SDK 9.0.318/10.0.401 and the
+.NET 8 runtime are installed, and the Release build produces the merged
+`Assemblies/GlueRimworld.dll`. The bounded shared actor profile has a live Glue
+MCP create -> validate -> save proof and the packaged mod has consumed real
+engine receipts in Quicktest. The opt-in native lane now admits `eat-meal` through
+RimWorld's JobTracker boundary and exposes a WorkGiver-backed construction mapping;
+native receipts are independently read back and busy/no-target pawns remain
+fail-closed. The official `.rws` save/load probe
+also passes, including the `LoadedGame` reset hook, and a live host-outage
+Quicktest remounts the same session after host relaunch. Cross-runtime
+replay/session parity and broader native affordances remain before a publishable
+"wired end-to-end" claim;
+the host and mod now have reproducible zero-error Release builds. See
+`NEXT_STEPS.md` for the remaining full-corpus, replay/session, and native-affordance
+gates.

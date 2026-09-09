@@ -1,0 +1,202 @@
+{
+  "$schema": "definition://actors/behavior-candidate-pack",
+  "packId": "rimworld-native-work-v1",
+  "runtime": "rimworld",
+  "description": "RimWorld-native work candidates for the shared actor/runtime/zomboid-day-tick route. The pack is declarative content: Glue ranks candidates and records intent; the RimWorld adapter remains authoritative for target legality, reservation, reachability, and JobGiver admission.",
+  "nativeJobMappings": {
+    "eat-meal": {
+      "admission": "try-ordered-job",
+      "jobDef": "Ingest",
+      "targetKind": "edible-meal",
+      "priorityPolicy": "replace-free-job",
+      "nativeReceiptKind": "rimworld-native-job-admission"
+    },
+    "construct-designated": {
+      "admission": "try-workgiver-job",
+      "workGiverDef": "ConstructFinishFrames",
+      "jobDef": "FinishFrame",
+      "targetKind": "construction-frame",
+      "priorityPolicy": "replace-free-job",
+      "nativeReceiptKind": "rimworld-native-construction-admission"
+    },
+    "rest-in-bed": {
+      "admission": "try-jobgiver",
+      "jobGiverType": "RimWorld.JobGiver_GetRest",
+      "targetKind": "resting-spot",
+      "priorityPolicy": "replace-free-job",
+      "nativeReceiptKind": "rimworld-native-rest-admission"
+    },
+    "haul-designated": {
+      "admission": "try-jobgiver",
+      "jobGiverType": "RimWorld.JobGiver_Haul",
+      "targetKind": "designated-haul",
+      "priorityPolicy": "replace-free-job",
+      "nativeReceiptKind": "rimworld-native-haul-admission"
+    }
+  },
+  "candidates": [
+  {
+    "behaviorId": "eat-meal",
+    "servesNeeds": {
+      "hunger": 0.8
+    },
+    "preconditions": [
+      {
+        "input": "has-edible-meal",
+        "op": "eq",
+        "value": 1
+      }
+    ],
+    "considerations": [
+      {
+        "input": "hunger.deficit",
+        "curve": {
+          "type": "quadratic",
+          "exponent": 2
+        }
+      },
+      {
+        "input": "meal-distance-pressure",
+        "curve": {
+          "type": "linear",
+          "slope": 0.45,
+          "yShift": 0.2
+        }
+      }
+    ],
+    "aggregation": "multiply-compensated",
+    "priorityBand": "urgent",
+    "executionSpec": {
+      "verb": "eat-meal",
+      "workflow": "actor/status/go-use-affordance",
+      "focusTag": "meal-source"
+    },
+    "tags": ["work", "food", "need"],
+    "requires": ["has-edible-meal"],
+    "description": "RimWorld work candidate. The native adapter supplies has-edible-meal and the legal meal target; Glue ranks the candidate but never reproduces JobGiver ingestion legality."
+  },
+  {
+    "behaviorId": "rest-in-bed",
+    "servesNeeds": {
+      "rest": 0.75,
+      "safety": 0.1
+    },
+    "preconditions": [
+      {
+        "input": "has-resting-spot",
+        "op": "eq",
+        "value": 1
+      }
+    ],
+    "considerations": [
+      {
+        "input": "rest.deficit",
+        "curve": {
+          "type": "quadratic",
+          "exponent": 2
+        }
+      },
+      {
+        "input": "danger-pressure",
+        "curve": {
+          "type": "linear",
+          "slope": 0.35,
+          "yShift": 0.25
+        }
+      }
+    ],
+    "aggregation": "multiply-compensated",
+    "priorityBand": "recovery",
+    "executionSpec": {
+      "verb": "rest-in-bed",
+      "workflow": "actor/status/go-use-affordance",
+      "focusTag": "resting-spot"
+    },
+    "tags": ["work", "rest", "recovery"],
+    "requires": ["has-resting-spot"],
+    "description": "RimWorld rest candidate. The native adapter owns bed assignment, danger, and JobGiver legality; the declarative candidate only supplies ranking semantics."
+  },
+  {
+    "behaviorId": "haul-designated",
+    "servesNeeds": {
+      "comfort": 0.05
+    },
+    "preconditions": [
+      {
+        "input": "has-designated-haul",
+        "op": "eq",
+        "value": 1
+      }
+    ],
+    "considerations": [
+      {
+        "input": "haul-pressure",
+        "curve": {
+          "type": "linear",
+          "slope": 0.8,
+          "yShift": 0.1
+        }
+      },
+      {
+        "input": "skill.hauling",
+        "curve": {
+          "type": "linear",
+          "slope": 0.25,
+          "yShift": 0.5
+        }
+      }
+    ],
+    "aggregation": "multiply-compensated",
+    "priorityBand": "routine",
+    "executionSpec": {
+      "verb": "haul-designated",
+      "workflow": "actor/status/go-use-affordance",
+      "focusTag": "designated-haul"
+    },
+    "tags": ["work", "hauling", "logistics"],
+    "requires": ["has-designated-haul"],
+    "description": "RimWorld hauling candidate. has-designated-haul is a native designation/claim fact, not a Glue-side reconstruction of reservation or reachability."
+  },
+  {
+    "behaviorId": "construct-designated",
+    "servesNeeds": {
+      "comfort": 0.1
+    },
+    "preconditions": [
+      {
+        "input": "has-designated-construction",
+        "op": "eq",
+        "value": 1
+      }
+    ],
+    "considerations": [
+      {
+        "input": "construction-pressure",
+        "curve": {
+          "type": "linear",
+          "slope": 0.7,
+          "yShift": 0.15
+        }
+      },
+      {
+        "input": "skill.construction",
+        "curve": {
+          "type": "linear",
+          "slope": 0.3,
+          "yShift": 0.45
+        }
+      }
+    ],
+    "aggregation": "multiply-compensated",
+    "priorityBand": "routine",
+    "executionSpec": {
+      "verb": "construct-designated",
+      "workflow": "actor/status/go-use-affordance",
+      "focusTag": "designated-construction"
+    },
+    "tags": ["work", "construction", "colony"],
+    "requires": ["has-designated-construction"],
+    "description": "RimWorld construction candidate. The native adapter supplies the legal designation, blueprint, reservation, and work-giver result; Glue only ranks and records the semantic intent."
+  }
+  ]
+}

@@ -2,7 +2,7 @@
 
   <!--
     RimWorld 1.5+ (this machine has 1.6.4871) runs its mod-loaded C# assemblies against
-    Unity's Mono/CoreCLR host at the .NET Standard 2.1 API level -- NOT modern net8.0/net10.0
+    Unity's Mono/CoreCLR host at the .NET Standard 2.1 API level; not modern net8.0/net10.0
     CoreCLR like glue's own runtimes/csharp (GlueCore/GlueFp/GlueServer, which multi-target
     net8.0;net10.0). A net8.0/net10.0 class library cannot be loaded in-process by RimWorld's
     host the way vintage-actors loads GlueCore.dll/GlueFp.dll directly (Vintage Story's own
@@ -22,11 +22,15 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\Assemblies\</OutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 
     <!-- Real local RimWorld install found on this machine; override via -p:RimWorldManagedDir=... elsewhere. -->
     <RimWorldManagedDir Condition="'$(RimWorldManagedDir)' == '' And Exists('C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed')">C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed</RimWorldManagedDir>
     <RimWorldManagedDir Condition="'$(RimWorldManagedDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed</RimWorldManagedDir>
+    <HarmonyPackageVersion>2.3.6</HarmonyPackageVersion>
+    <NewtonsoftJsonPackageVersion>13.0.4</NewtonsoftJsonPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,9 +38,10 @@
     <Compile Include="GlueBridgeClient.cs" />
     <Compile Include="PawnBehaviorBridge.cs" />
     <Compile Include="RimworldSeedCatalog.cs" />
+    <Compile Include="CanonicalLensReceiptClient.cs" />
   </ItemGroup>
 
-  <!-- RimWorld / Unity assemblies -- real HintPaths against the installed game, not invented. -->
+  <!-- RimWorld / Unity assemblies use real HintPaths against the installed game. -->
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(RimWorldManagedDir)\Assembly-CSharp.dll</HintPath>
@@ -54,13 +59,13 @@
 
   <!--
     Harmony is provided at runtime by the separate "Harmony" mod (brrainz.harmony, see
-    About/About.xml modDependencies) rather than bundled here -- the standard RimWorld
+    About/About.xml modDependencies) rather than bundled here; the standard RimWorld
     modding convention, avoiding duplicate-Harmony-load AppDomain conflicts. This
     PackageReference is compile-time only (Private=false / ExcludeAssets=runtime) so no
     0Harmony.dll gets copied into Assemblies/.
   -->
   <ItemGroup>
-    <PackageReference Include="Lib.Harmony" Version="2.3.6">
+    <PackageReference Include="Lib.Harmony" Version="$(HarmonyPackageVersion)">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
@@ -68,14 +73,14 @@
     <!--
       RimWorld's own Managed/ folder does not ship Newtonsoft.Json (verified against the
       installed 1.6.4871 Managed dir on this machine). Referenced at compile time only
-      (Private=false / ExcludeAssets=runtime, same pattern as Harmony above) -- the ILRepack
+      (Private=false / ExcludeAssets=runtime, same pattern as Harmony above); the ILRepack
       step below merges its IL directly into GlueRimworld.dll and internalizes its types, so
       no separate Newtonsoft.Json.dll is ever copied into Assemblies/. This closes the
       AppDomain-collision risk previously disclosed here and in NEXT_STEPS.md item 7 (another
       mod bundling a different Newtonsoft.Json version can no longer collide with this one,
       since this one is never a standalone loadable assembly to begin with).
     -->
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4">
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
@@ -105,16 +110,17 @@
     <ItemGroup>
       <ILRepackInputAssembly Include="$(TargetPath)" />
       <ILRepackInputAssembly Include="$(IntermediateOutputPath)Newtonsoft.Json.dll" Condition="Exists('$(IntermediateOutputPath)Newtonsoft.Json.dll')" />
+      <ILRepackInputAssembly Include="$(NuGetPackageRoot)newtonsoft.json\$(NewtonsoftJsonPackageVersion)\lib\netstandard2.0\Newtonsoft.Json.dll" Condition="Exists('$(NuGetPackageRoot)newtonsoft.json\$(NewtonsoftJsonPackageVersion)\lib\netstandard2.0\Newtonsoft.Json.dll')" />
       <ILRepackInputAssembly Include="$(OutDir)Newtonsoft.Json.dll" Condition="'@(ILRepackInputAssembly)' == '$(TargetPath)' And Exists('$(OutDir)Newtonsoft.Json.dll')" />
     </ItemGroup>
     <ILRepack
       Parallel="true"
       Internalize="true"
-      DebugInfo="true"
+      DebugInfo="false"
       InputAssemblies="@(ILRepackInputAssembly)"
       OutputFile="$(TargetPath)"
       TargetKind="Dll"
-      LibraryPath="$(OutDir);$(RimWorldManagedDir)" />
+      LibraryPath="$(OutDir);$(RimWorldManagedDir);$(NuGetPackageRoot)lib.harmony\$(HarmonyPackageVersion)\ref\netstandard2.0;$(NuGetPackageRoot)lib.harmony\$(HarmonyPackageVersion)\lib\net35" />
     <Delete Files="$(OutDir)Newtonsoft.Json.dll" Condition="Exists('$(OutDir)Newtonsoft.Json.dll')" />
   </Target>
 

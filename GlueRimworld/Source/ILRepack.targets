@@ -1,0 +1,7 @@
+<Project>
+  <!--
+    GlueRimworld.csproj owns the merge because Harmony is a compile-time-only,
+    externally provided RimWorld dependency. This extension file prevents the
+    ILRepack package from adding its generic second merge target.
+  -->
+</Project>

@@ -19,6 +19,8 @@ namespace GlueRimworld
         public Dictionary<string, double> NeedDecayRates { get; } = new();
         public Dictionary<string, string> ScheduleMap { get; } = new();
         public Dictionary<string, JObject> Skills { get; } = new();
+        public JArray CandidatePack { get; } = new();
+        public Dictionary<string, JObject> NativeJobMappings { get; } = new();
 
         public static RimworldSeedCatalog LoadFromModContent(ModContentPack content)
         {
@@ -28,6 +30,7 @@ namespace GlueRimworld
             catalog.LoadNeedMap(Path.Combine(seedsDir, "rimworld-need-map.json"));
             catalog.LoadScheduleMap(Path.Combine(seedsDir, "rimworld-schedule-map.json"));
             catalog.LoadSkills(Path.Combine(seedsDir, "rimworld-pawn-skill-taxonomy.json"));
+            catalog.LoadCandidatePack(Path.Combine(seedsDir, "rimworld-work-candidates.json"));
 
             return catalog;
         }
@@ -71,6 +74,25 @@ namespace GlueRimworld
             }
         }
 
+        private void LoadCandidatePack(string path)
+        {
+            var root = ReadJson(path);
+            if (root == null) return;
+            if (root["nativeJobMappings"] is JObject mappings)
+            {
+                foreach (var mapping in mappings.Properties())
+                {
+                    if (mapping.Value is JObject mappingObject)
+                        NativeJobMappings[mapping.Name] = (JObject)mappingObject.DeepClone();
+                }
+            }
+            foreach (var candidate in (root["candidates"] as JArray) ?? new JArray())
+            {
+                if (candidate is JObject candidateObject)
+                    CandidatePack.Add(candidateObject.DeepClone());
+            }
+        }
+
         private static JObject? ReadJson(string path)
         {
             try
@@ -93,6 +115,6 @@ namespace GlueRimworld
             ScheduleMap.TryGetValue(rimworldTimeAssignmentDefName, out var mode) ? mode : "anything";
 
         public string Summary() =>
-            $"needMap={NeedMap.Count} scheduleMap={ScheduleMap.Count} skills={Skills.Count}";
+            $"needMap={NeedMap.Count} scheduleMap={ScheduleMap.Count} skills={Skills.Count} candidates={CandidatePack.Count} nativeMappings={NativeJobMappings.Count}";
     }
 }

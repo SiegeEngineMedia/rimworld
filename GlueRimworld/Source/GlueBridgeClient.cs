@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace GlueRimworld
@@ -29,18 +31,27 @@ namespace GlueRimworld
         public bool LastCallSucceeded { get; private set; }
         public string? LastError { get; private set; }
 
-        public GlueBridgeClient(string baseUrl = "http://127.0.0.1:8765")
+        public GlueBridgeClient(string? baseUrl = null)
         {
-            _baseUrl = baseUrl.TrimEnd('/');
-            _http = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            var configuredUrl = baseUrl
+                ?? Environment.GetEnvironmentVariable("GLUE_RIMWORLD_HOST_URL")
+                ?? "http://127.0.0.1:8765";
+            _baseUrl = configuredUrl.TrimEnd('/');
+            // The first request can include cold template discovery/validation on the
+            // out-of-process host. Keep the hook asynchronous, but allow that legitimate
+            // cold-start work to finish before the game-side fail-closed path records a
+            // transport failure.
+            _http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
         }
 
+        public string BaseUrl => _baseUrl;
+
         /// <summary>Liveness probe against glue-runtime-host's GET /ping route.</summary>
-        public bool Ping()
+        public async Task<bool> PingAsync(CancellationToken cancellationToken = default)
         {
             try
             {
-                var resp = _http.GetAsync(_baseUrl + "/ping").GetAwaiter().GetResult();
+                using var resp = await _http.GetAsync(_baseUrl + "/ping", cancellationToken).ConfigureAwait(false);
                 return resp.IsSuccessStatusCode;
             }
             catch
@@ -50,42 +61,74 @@ namespace GlueRimworld
         }
 
         /// <summary>
-        /// Renders a glue template by key against the given input args and returns the parsed
-        /// result, or null on failure (see LastError). Synchronous/blocking: this foothold calls
-        /// it from a throttled GameComponentTick well off any per-frame render path, which is
-        /// acceptable for a small number of colonists at a multi-second cadence -- a full
-        /// build-out should move this onto RimWorld's long-event queue instead (NEXT_STEPS.md).
+        /// Renders a glue template by key without blocking the RimWorld simulation thread.
+        /// The caller owns completion scheduling and must only consume the result on the game
+        /// thread. The response carries its own error so concurrent pawn requests cannot race
+        /// through the shared LastError diagnostic properties.
         /// </summary>
-        public JObject? Execute(string templateKey, JObject args)
+        public async Task<GlueBridgeResult> ExecuteAsync(
+            string templateKey,
+            JObject args,
+            CancellationToken cancellationToken = default)
         {
             var payload = new JObject { ["template"] = templateKey, ["args"] = args };
             try
             {
-                var content = new StringContent(
+                using var content = new StringContent(
                     payload.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
-                var resp = _http.PostAsync(_baseUrl + "/api/execute", content).GetAwaiter().GetResult();
-                var body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                using var resp = await _http.PostAsync(_baseUrl + "/api/execute", content, cancellationToken).ConfigureAwait(false);
+                var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var parsed = JObject.Parse(body);
 
                 if (parsed["error"] != null)
                 {
                     LastCallSucceeded = false;
-                    LastError = parsed["error"]!.Value<string>();
-                    return null;
+                    var error = parsed["error"]!.Value<string>() ?? "remote execution error";
+                    LastError = error;
+                    return GlueBridgeResult.Fail(error);
                 }
 
                 LastCallSucceeded = true;
                 LastError = null;
-                return parsed;
+
+                // /api/execute returns an envelope. The C# host's wildcard
+                // projection is serialized as the envelope's JSON string so
+                // text transports and the existing lens client remain
+                // compatible; the game-side observation boundary consumes the
+                // projected binding object itself.
+                var outputText = parsed["output"]?.Value<string>();
+                if (!string.IsNullOrWhiteSpace(outputText))
+                {
+                    var projected = JObject.Parse(outputText);
+                    return GlueBridgeResult.Success(projected);
+                }
+
+                return GlueBridgeResult.Success(parsed);
             }
             catch (Exception ex)
             {
                 LastCallSucceeded = false;
                 LastError = ex.Message;
-                return null;
+                return GlueBridgeResult.Fail(ex.Message);
             }
         }
 
         public void Dispose() => _http.Dispose();
+    }
+
+    public sealed class GlueBridgeResult
+    {
+        private GlueBridgeResult(JObject? payload, string? error)
+        {
+            Payload = payload;
+            Error = error;
+        }
+
+        public JObject? Payload { get; }
+        public string? Error { get; }
+        public bool Succeeded => Payload != null && Error == null;
+
+        public static GlueBridgeResult Success(JObject payload) => new GlueBridgeResult(payload, null);
+        public static GlueBridgeResult Fail(string error) => new GlueBridgeResult(null, error);
     }
 }

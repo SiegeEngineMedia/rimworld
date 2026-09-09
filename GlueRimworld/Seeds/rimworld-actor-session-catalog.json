@@ -1,0 +1,99 @@
+{
+  "$schema": "definition://glue-template",
+  "key": "colony/rimworld-actor-session-catalog",
+  "version": "1.0.0",
+  "kind": "actor-session-catalog",
+  "title": "RimWorld actor observation and reconnect reconciliation",
+  "description": "Provider-neutral actor session contract for the RimWorld mount. Native Pawn, JobGiver, WorkGiver, reservation, reachability, and lifecycle state remain authoritative; Glue retains bounded projections, receipts, and reconciliation metadata only.",
+  "provider": "GlueRimworld",
+  "composition": {
+    "existingActorObservationOwner": "GLUE_RimworldMountSessions",
+    "existingLifecycleOwner": "GLUE_RimworldMountPolicy",
+    "existingIntentOwner": "GLUE_RimworldMountSessions",
+    "referenceCatalog": "GLUE_RimworldMountPolicy",
+    "duplicateActorRegistryPolicy": "reject",
+    "directRuntimeDependency": false,
+    "nativeProjectionPolicy": "transient-hint-only",
+    "observationAuthorityPolicy": "native-rimworld-authority",
+    "commandAuthorityPolicy": "native-job-and-workgiver-authority"
+  },
+  "session": {
+    "sessionKeyPolicy": "stable-for-active-colony-map",
+    "sessionKeyFormat": "rimworld-colony-<map.uniqueID>",
+    "worldReferenceFormat": "rimworld-map-<map.uniqueID>",
+    "revisionPolicy": "monotonic-native-lifecycle-epoch",
+    "revisionBoundaries": ["new-game", "save-load", "map-change"],
+    "heartbeatTemplateKey": "actor/runtime/rimworld-session-mount-heartbeat",
+    "mountPolicyRef": "lens://rimworld",
+    "rendererTemplateKey": "functional/server/lens-renderer-receipt",
+    "retentionPolicy": "bounded-mutable-map-replay-read"
+  },
+  "actorIdentity": {
+    "componentKey": "actor.identity",
+    "actorKeyPolicy": "native-thing-id-within-session",
+    "referenceComponent": "rimworld.pawn-reference",
+    "lifecycleStates": ["observed", "authoritative", "disconnected", "reconciling", "reconciled", "tombstoned"],
+    "authority": "native-rimworld",
+    "observationNeverPromotesAuthority": true,
+    "nativeHandlePolicy": "transient-hint-only"
+  },
+  "observation": {
+    "componentKey": "actor.observation",
+    "fields": ["actorKey", "needFacts", "scheduleFact", "skillFacts", "healthFacts", "inventoryFacts", "currentJob", "position", "observationRevision", "observedAt", "observer", "expiresAt"],
+    "nativeAuthority": ["Need", "TimeAssignmentDef", "SkillRecord", "HediffSet", "ThingOwner", "Pawn_JobTracker", "Map"],
+    "nativeHandleHintPolicy": {"allowed": true, "persist": false, "replicate": false, "reconciliationInput": false},
+    "staleRevisionOutcome": "actor.observation.stale",
+    "missingLoadedActorOutcome": "actor.observation.unavailable"
+  },
+  "command": {
+    "requestComponent": "actor.command.request",
+    "acceptanceComponent": "actor.command.acceptance",
+    "rejectionComponent": "actor.command.rejection",
+    "supportedCommands": ["refresh", "inspect", "propose-native-job", "admit-native-job"],
+    "requestIdPolicy": "caller-issued-opaque-id",
+    "expectedRevisionRequired": true,
+    "authority": "native-rimworld-authority",
+    "clientMayMutate": false,
+    "nativeAdmissionPolicy": "jobgiver-workgiver-only",
+    "duplicateRequestPolicy": "return-persisted-outcome-without-reapplying",
+    "targetResolution": "native-lookup-by-actor-key-and-reference",
+    "displayNameResolution": "reject",
+    "unrecognizedCommandOutcome": "actor.command.unknown"
+  },
+  "reconciliation": {
+    "componentKey": "actor.reconnect.reconciliation",
+    "requiredInputFields": ["actorKey", "lastAuthoritativeRevision", "observedRevision", "reconnectRevision"],
+    "acceptedOutcomes": ["reconciled", "stale-authority", "actor-unavailable", "tombstoned"],
+    "persistedFields": ["actorKey", "lastAuthoritativeRevision", "observedRevision", "reconnectRevision", "outcome", "reconciledAt", "rejectionCode"],
+    "reconnectPolicy": "reconcile-by-session-key-actor-key-and-native-revision",
+    "restartPolicy": "reload-durable-reference-and-revision-fields",
+    "nativeHandleRequirement": "none",
+    "stalePolicy": "persist-and-request-native-observation"
+  },
+  "transitionPolicy": {
+    "states": ["requested", "validated", "projecting", "acknowledged", "rejected", "reconciling", "reconciled"],
+    "transitions": [
+      {"event": "request", "from": ["absent"], "to": "requested", "requires": ["request.id", "actor.identity"]},
+      {"event": "validate", "from": ["requested"], "to": "validated", "requires": ["native.authority", "expected.revision", "actor.reference"]},
+      {"event": "project", "from": ["validated"], "to": "projecting", "requires": ["native.observation-or-typed-gap"]},
+      {"event": "acknowledge", "from": ["projecting"], "to": "acknowledged", "requires": ["authority.revision", "receipt.readback"]},
+      {"event": "reject", "from": ["requested", "validated"], "to": "rejected", "requires": ["typed.rejection", "no.state.drift"]},
+      {"event": "reconnect", "from": ["disconnected"], "to": "reconciling", "requires": ["session.key", "actor.key", "native.revision"]},
+      {"event": "reconcile", "from": ["reconciling"], "to": "reconciled", "requires": ["actor.key", "revision.comparison"]}
+    ]
+  },
+  "rejectionPolicy": {
+    "typedAndPersisted": true,
+    "noGuessedIdentity": true,
+    "noDisplayNameResolution": true,
+    "noImplicitTargetExpansion": true,
+    "states": [
+      {"code": "actor.command.duplicate", "when": "request-id-already-has-an-outcome", "retry": "return-persisted-outcome"},
+      {"code": "actor.command.stale", "when": "expected-revision-is-behind-native-authority", "retry": "explicit-reobserve-and-resubmit"},
+      {"code": "actor.target.unavailable", "when": "native-actor-is-not-loaded-or-projectable", "retry": "explicit-native-observation"},
+      {"code": "actor.native-job.illegal", "when": "jobgiver-or-workgiver-rejects-target", "retry": "wait-for-native-legality-and-reobserve"},
+      {"code": "actor.reconnect.stale", "when": "reconnect-revision-is-behind-native-authority", "retry": "persist-stale-result-and-request-native-observation"}
+    ]
+  },
+  "discardedValues": ["nativePawnObject", "nativeJobHandle", "loadedCellObjects", "unboundedColonyRoster", "unboundedObservationHistory", "optimisticEditorMutation"]
+}

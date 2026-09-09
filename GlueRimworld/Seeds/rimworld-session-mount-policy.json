@@ -1,0 +1,96 @@
+{
+  "$schema": "definition://lens-session-mount-policy",
+  "lensRef": "lens://rimworld",
+  "layerKind": "domain-overlay",
+  "profileId": "rimworld",
+  "capabilityBundle": {
+    "$schema": "definition://session-capability-bundle",
+    "bundleKey": "rimworld-live-colony",
+    "label": "RimWorld Live Colony",
+    "description": "Shared Glue Editor actor observation and receipt projection over native RimWorld facts, job legality, reservation, reachability, and lifecycle hooks.",
+    "defaultPrimaryCapabilityKey": "rimworld-live-colony",
+    "capabilities": [
+      {
+        "$schema": "definition://session-capability-ref",
+        "capabilityKey": "rimworld-live-colony",
+        "kind": "integration",
+        "label": "RimWorld Live Colony",
+        "description": "Refresh and inspect a retained RimWorld colony projection while the native mod remains authoritative for world state and actions.",
+        "artifactSchemaRef": "definition://lens-renderer-projection",
+        "commandSchemaRef": "definition://glue-tool-session",
+        "defaultDetailLevel": "expanded",
+        "backgroundCapable": true,
+        "saveImpact": "none",
+        "affordance": {
+          "$schema": "definition://capability-contract",
+          "requirementTags": ["rimworld-host-live"],
+          "grantTags": ["rimworld-colony-observation"],
+          "consumerKinds": ["glue-editor"],
+          "readinessKinds": ["native-facts", "native-receipts"],
+          "capacity": {
+            "unitKey": "live-colony-per-session",
+            "max": 1,
+            "reusable": true
+          }
+        }
+      }
+    ]
+  },
+  "mountedSurfaces": [
+    {
+      "$schema": "definition://lens-mounted-tool-surface",
+      "mountKey": "rimworld-live-colony",
+      "lensRef": "lens://rimworld",
+      "surfaceKey": "rimworld-live-colony",
+      "capabilityKey": "rimworld-live-colony",
+      "surfaceKind": "session-capability",
+      "entryMode": "primary",
+      "toolKeys": ["rimworld-live-colony"],
+      "actionKeys": ["refresh", "inspect"],
+      "requiresOpaqueActionHandle": false,
+      "executionContract": {
+        "authorityKind": "session-authoritative",
+        "revisionPolicy": "required",
+        "replayPolicy": "journal-read",
+        "rejectionPolicy": "no-state-drift"
+      },
+      "capabilityIds": ["game:rimworld", "actor:observation", "actor:execution-receipts"],
+      "commandSchemaRefs": ["definition://glue-tool-session"],
+      "dispatchRoutes": [
+        {
+          "match": { "action": "refresh" },
+          "templateKey": "functional/server/lens-renderer-receipt",
+          "argKeys": ["sessionKey", "activeProjection", "selectedPath", "worldRef", "worldRevision", "mountPolicyRef", "principal", "selectedRefs", "mountedLenses", "mountDecisions", "panels", "scene", "actions", "diagnostics", "rings", "timeStream", "nextLens"],
+          "resultPath": "output"
+        },
+        {
+          "match": { "action": "inspect" },
+          "templateKey": "functional/server/lens-renderer-receipt",
+          "argKeys": ["sessionKey", "activeProjection", "selectedPath", "worldRef", "worldRevision", "mountPolicyRef", "principal", "selectedRefs", "mountedLenses", "mountDecisions", "panels", "scene", "actions", "diagnostics", "rings", "timeStream", "nextLens"],
+          "resultPath": "output"
+        }
+      ],
+      "uiMount": {
+        "viewModelTemplateKey": "games/shared/session-envelope-viewmodel",
+        "stateBinding": "worldProjection",
+        "actionKeys": ["refresh", "inspect"]
+      },
+      "defaultDetailLevel": "expanded",
+      "backgroundMode": "automatic",
+      "notes": [
+        "The native RimWorld adapter owns facts, target legality, reservation, reachability, job admission, and lifecycle reset hooks.",
+        "The shared renderer and viewmodel consume the session envelope; they never become a second gameplay authority.",
+        "sessionKey is stable for the active colony and worldRevision changes on a native map/lifecycle boundary."
+      ]
+    }
+  ],
+  "automaticBackgroundOperationKinds": ["rimworld-observation-heartbeat"],
+  "defaultDetailLevel": "expanded",
+  "defaultSaveEligibility": "disabled",
+  "allowMultiLens": true,
+  "lateJoinSummary": [
+    "RimWorld native facts are authoritative.",
+    "Glue Editor renders the shared actor observation and receipt projection.",
+    "Refresh is fail-closed when the host or native map is unavailable."
+  ]
+}

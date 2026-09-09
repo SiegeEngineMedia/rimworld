@@ -3,6 +3,10 @@
 [Oo]bj/
 Assemblies/*.dll
 Assemblies/*.pdb
+GlueRimworld/Assemblies/*.dll
+GlueRimworld/Assemblies/*.pdb
+GlueRimworld/Assemblies/*.deps.json
+GlueRimworld/work/
 
 # .NET
 *.user
