@@ -56,6 +56,11 @@ honest, disclosed limits of this pass.
 - This consumer's entrypoint is `manifest.json`; it inherits the shared editor
   layer and declares `GLUE_RimworldCandidatePack` as a seed-catalog resource,
   keeping the candidate pack editor-visible without duplicating it into Glue.
+- `Seeds/rimworld-workshop-affordance-catalog.json` declares the Steam Workshop
+  review set, isolated acquisition plan, source revisions, native authority
+  boundaries, and candidate fixtures for mechanics that can enrich this surface.
+  The cited synthesis and live/headless harness options are recorded in
+  `docs/research/2026-09-09-workshop-affordance-review.md`.
 - `Seeds/` holds the RimWorld-specific adapter tables (`NeedDef` -> glue need key,
   `TimeAssignmentDef` -> schedule mode, and the relocated `pawn-skill-taxonomy.json`
   that the Z-1 lane left behind) -- genuinely new content for this integration, kept
