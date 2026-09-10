@@ -25,6 +25,7 @@
     "revisionBoundaries": ["new-game", "save-load", "map-change"],
     "heartbeatTemplateKey": "actor/runtime/rimworld-session-mount-heartbeat",
     "mountPolicyRef": "lens://rimworld",
+    "accessibilityLensRef": "GLUE_RimworldAccessibilityLens",
     "rendererTemplateKey": "functional/server/lens-renderer-receipt",
     "retentionPolicy": "bounded-mutable-map-replay-read"
   },

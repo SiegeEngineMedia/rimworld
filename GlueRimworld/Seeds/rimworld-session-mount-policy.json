@@ -3,6 +3,7 @@
   "lensRef": "lens://rimworld",
   "layerKind": "domain-overlay",
   "profileId": "rimworld",
+  "accessibilityLensRef": "GLUE_RimworldAccessibilityLens",
   "capabilityBundle": {
     "$schema": "definition://session-capability-bundle",
     "bundleKey": "rimworld-live-colony",
@@ -73,7 +74,8 @@
       "uiMount": {
         "viewModelTemplateKey": "games/shared/session-envelope-viewmodel",
         "stateBinding": "worldProjection",
-        "actionKeys": ["refresh", "inspect"]
+        "actionKeys": ["refresh", "inspect"],
+        "accessibilityLensRef": "GLUE_RimworldAccessibilityLens"
       },
       "defaultDetailLevel": "expanded",
       "backgroundMode": "automatic",

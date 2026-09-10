@@ -1,0 +1,164 @@
+{
+  "$schema": "definition://rimworld-accessibility-lens",
+  "lensId": "rimworld-accessibility-lens-v1",
+  "lensRef": "lens://rimworld/accessibility",
+  "title": "RimWorld semantic accessibility lens",
+  "purpose": "Expose the retained RimWorld colony mount through the same renderer-neutral accessibility vocabulary used by Glue Editor and GlueActors. This is a semantic observation and control contract, not a claim that the native game UI is itself an accessibility tree.",
+  "sourceSurface": {
+    "mountPolicyRef": "lens://rimworld",
+    "sessionDatasource": "GLUE_RimworldMountSessions",
+    "projectionSchema": "definition://lens-renderer-projection",
+    "nativeAuthority": "rimworld-native",
+    "projectionAuthority": "glue-projection-only",
+    "nativeUiTreeClaim": false,
+    "pixelOrCoordinateInput": false,
+    "ocrInput": false
+  },
+  "treeContract": {
+    "root": {
+      "id": "rimworld-colony-<mapId>",
+      "role": "landmark",
+      "accessibleName": "RimWorld Colony",
+      "description": "Native RimWorld colony observation and declared actor affordances",
+      "childrenOrder": ["status", "summary", "actors", "diagnostics", "actions"]
+    },
+    "nodes": {
+      "status": {
+        "role": "status",
+        "id": "rimworld-colony-<mapId>-status",
+        "accessibleName": "Colony connection status",
+        "valueSource": "worldProjectionFreshness.status",
+        "descriptionSource": "worldProjectionFreshness.freshness",
+        "announceOnChange": true,
+        "allowedValues": ["fresh", "pending", "disconnected", "reconciling", "reconciled", "unavailable", "not-fired"]
+      },
+      "summary": {
+        "role": "group",
+        "id": "rimworld-colony-<mapId>-summary",
+        "accessibleName": "Colony summary",
+        "fields": ["runtime", "mapId", "tick", "pawnCount", "sessionId", "revision"],
+        "format": "Runtime {runtime}; map {mapId}; {pawnCount} free colonists; native tick {tick}; revision {revision}."
+      },
+      "actors": {
+        "role": "list",
+        "id": "rimworld-colony-<mapId>-actors",
+        "accessibleName": "Free colonists",
+        "description": "Bounded list of up to 16 spawned free colonists from the native map projection.",
+        "bounded": true,
+        "maxItems": 16,
+        "itemOrder": "native-observation-order",
+        "itemKey": "actorId",
+        "itemTemplate": {
+          "role": "listitem",
+          "id": "<actorId>",
+          "accessibleName": "Colonist {label}",
+          "description": "Hunger {hunger}; rest {rest}; current job {jobDef-or-none}.",
+          "fields": ["actorId", "label", "mapId", "hunger", "rest", "jobDef"],
+          "actions": ["inspect"],
+          "targetResolution": "actor-key-only",
+          "displayNameResolution": "reject"
+        }
+      },
+      "diagnostics": {
+        "role": "log",
+        "id": "rimworld-colony-<mapId>-diagnostics",
+        "accessibleName": "Colony diagnostics",
+        "fields": ["code", "severity", "message", "hookState", "hookAttemptCount", "hookFiredCount", "pendingRequestCount"],
+        "announceSeverities": ["warning", "error"],
+        "preserveNotFiredHooks": true
+      },
+      "actions": {
+        "role": "toolbar",
+        "id": "rimworld-colony-<mapId>-actions",
+        "accessibleName": "Colony actions",
+        "navigationOrder": ["refresh", "inspect"],
+        "commands": {
+          "refresh": {
+            "role": "button",
+            "accessibleName": "Refresh RimWorld colony observation",
+            "description": "Request a fresh native observation and re-render the retained session projection.",
+            "mutatesGameplay": false,
+            "requires": ["sessionKey", "expectedRevision"],
+            "routeAction": "refresh"
+          },
+          "inspect": {
+            "role": "button",
+            "accessibleName": "Inspect selected colonist",
+            "description": "Read the selected actor's latest native projection and receipt state.",
+            "mutatesGameplay": false,
+            "requires": ["sessionKey", "actorKey", "expectedRevision"],
+            "routeAction": "inspect"
+          }
+        }
+      }
+    }
+  },
+  "accessibleNaming": {
+    "identity": "Use semantic actorId and sessionKey for targeting; labels are presentation only.",
+    "missingLabel": "actor.observation.unavailable",
+    "missingValue": "not-observed",
+    "nullJob": "no current native job",
+    "nativeHandlePolicy": "transient-hint-only",
+    "neverSpeak": ["nativePawnObject", "nativeJobHandle", "loadedCellObjects"]
+  },
+  "navigation": {
+    "model": "natural-tree-order",
+    "focusableRoles": ["button", "listitem"],
+    "forbidPositiveTabIndex": true,
+    "keyboardActivation": ["Enter", "Space"],
+    "listMovement": ["ArrowUp", "ArrowDown", "Home", "End"],
+    "returnFocusAfterRefresh": "previous-semantic-node",
+    "selectionStateSeparateFromFocus": true
+  },
+  "verbosity": {
+    "default": "expanded",
+    "levels": {
+      "compact": ["status", "summary", "selected-actor"],
+      "expanded": ["status", "summary", "actors", "diagnostics", "actions"],
+      "debug": ["status", "summary", "actors", "diagnostics", "actions", "receipts", "revisions", "hook-state"]
+    },
+    "userMayChoose": true,
+    "nativeFactsRemainVisible": true
+  },
+  "announcements": {
+    "mounted": "RimWorld colony observation mounted. Native facts are authoritative.",
+    "refreshed": "RimWorld colony observation refreshed at native revision {revision}.",
+    "pending": "RimWorld colony observation is waiting for the native bridge.",
+    "disconnected": "RimWorld colony observation disconnected; no gameplay mutation was attempted.",
+    "reconciled": "RimWorld colony observation reconnected and reconciled at revision {revision}.",
+    "notFired": "RimWorld observation hook did not fire: {reason}.",
+    "actorUnavailable": "Colonist {actorKey} is not currently available for native observation.",
+    "typedRejection": "RimWorld rejected the requested native action: {code}."
+  },
+  "typedOutcomes": {
+    "success": ["observed", "refreshed", "reconciled", "receipt-readback"],
+    "nonError": ["pending", "not-fired", "disconnected"],
+    "rejections": ["actor.observation.stale", "actor.observation.unavailable", "actor.command.stale", "actor.native-job.illegal", "actor.reconnect.stale"],
+    "noStateDrift": true,
+    "noOptimisticGameplayMutation": true
+  },
+  "acceptanceGates": [
+    {
+      "gate": "semantic-tree",
+      "requires": ["root-accessible-name", "stable-session-id", "stable-actor-keys", "bounded-roster", "native-freshness"]
+    },
+    {
+      "gate": "assistive-navigation",
+      "requires": ["natural-tree-order", "keyboard-activation", "list-keyboard-model", "refresh-return-focus", "no-positive-tabindex"]
+    },
+    {
+      "gate": "honest-runtime-evidence",
+      "requires": ["native-observation-or-typed-gap", "hook-state", "receipt-readback-or-typed-failure", "no-pixel-bypass"]
+    },
+    {
+      "gate": "native-authority",
+      "requires": ["read-only-accessibility-actions", "revision-required", "actor-key-targeting", "display-name-rejection", "no-gameplay-mutation"]
+    }
+  ],
+  "deferredNativeSeams": [
+    "native RimWorld UI accessibility-tree serialization",
+    "screen-reader output verification inside ISUI",
+    "native focus/keyboard event lowering",
+    "actor detail selection action routed through the live retained session"
+  ]
+}

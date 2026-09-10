@@ -34,6 +34,11 @@ projects, admits, observes, and reconciles.
   narrow: `eat-meal`, mount persistence, and reconnect are observed; the tenant
   composition itself is not yet consumed by `RimworldSeedCatalog`, and the other
   candidate families still need clean native fixtures.
+- `Seeds/rimworld-accessibility-lens.json` now binds the mount to a bounded,
+  renderer-neutral semantic tree. It covers stable actor identity, accessible
+  names, keyboard/list navigation, freshness and not-fired announcements, and
+  read-only refresh/inspect actions. Native ISUI tree serialization and actual
+  screen-reader output remain explicit deferred seams.
 
 ## Required release order
 

@@ -75,6 +75,12 @@ honest, disclosed limits of this pass.
   lifecycle receipts, and repeated efficacy. The retained proof currently covers
   `eat-meal` plus mount reconnect; the other declared candidate families remain
   fixture-required.
+- `Seeds/rimworld-accessibility-lens.json` is the renderer-neutral assistive
+  surface for the retained colony mount. It gives the editor a bounded semantic
+  tree with stable actor keys, accessible names, keyboard/list navigation,
+  freshness announcements, typed gaps, and read-only refresh/inspect actions.
+  It deliberately does not claim a native RimWorld UI accessibility tree or
+  permit pixel, OCR, coordinate, or display-name control.
 - `Seeds/` holds the RimWorld-specific adapter tables (`NeedDef` -> glue need key,
   `TimeAssignmentDef` -> schedule mode, and the relocated `pawn-skill-taxonomy.json`
   that the Z-1 lane left behind) -- genuinely new content for this integration, kept

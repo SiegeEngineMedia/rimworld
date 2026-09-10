@@ -82,6 +82,12 @@
           "schema": "definition://actor-corpus-efficacy-profile",
           "description": "Declarative evidence ladder for separating manifest visibility, Glue execution, native RimWorld admission, lifecycle behavior, and repeated actor efficacy. Historical receipts are evidence inputs, not fresh-run claims."
         },
+        "GLUE_RimworldAccessibilityLens": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-accessibility-lens.json",
+          "schema": "definition://rimworld-accessibility-lens",
+          "description": "Renderer-neutral semantic accessibility contract for the retained RimWorld colony mount: stable actor identity, bounded navigation, native freshness, typed status announcements, and read-only refresh/inspect affordances."
+        },
         "GLUE_RimworldHelpToolingLensPolicy": {
           "type": "seed-catalog",
           "seed": "Seeds/rimworld-help-tooling-lens-policy.json",
