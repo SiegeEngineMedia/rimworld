@@ -1,0 +1,174 @@
+{
+  "$schema": "definition://cross-runtime-affordance-map",
+  "mapId": "rimworld-cross-corpus-affordances-v1",
+  "runtime": "rimworld",
+  "description": "Declarative synthesis of the shared Glue, GlueZomboid, Vintage actors, and Burn the Colonies affordance vocabulary against selected RimWorld Workshop mechanics. It describes projection and evidence boundaries; it does not import third-party code or grant Glue native authority.",
+  "corpus": [
+    {
+      "runtime": "glue",
+      "role": "shared-editor-and-runtime-contract",
+      "references": [
+        "templates/functional/actor/behavior/response-curve-eval.json",
+        "templates/functional/actor/behavior/requirement-eligible-behavior-filter.json",
+        "templates/functional/actor/behavior/consideration-scorer.json",
+        "templates/functional/actor/behavior/arbiter.json",
+        "templates/functional/actor/affordance/visible-affordance-action-proposal.json",
+        "templates/functional/actor/affordance/guarded-action-kernel.json",
+        "templates/functional/actor/items/inventory-affordance-resolver.json",
+        "templates/functional/actor/spatial/spatial-activity-affordance-projection.json",
+        "templates/functional/actor/affordance/headless-host-capability-admission.json",
+        "templates/functional/actor/affordance/host-affordance-action-receipt-bridge.json",
+        "templates/functional/games/shared/session-viewmodel-mount.json"
+      ]
+    },
+    {
+      "runtime": "zomboid",
+      "role": "portable-actor-needs-and-logistics-patterns",
+      "references": [
+        "../zomboid/GlueActors/Contents/mods/GlueActors/42/media/data/seeds/colony/pawn-need-taxonomy.json",
+        "../zomboid/GlueActors/Contents/mods/GlueActors/42/media/data/seeds/colony/hauling-behaviors.json",
+        "../zomboid/GlueActors/Contents/mods/GlueActors/42/media/data/seeds/workflow-action-contracts/actor-behavior.json"
+      ]
+    },
+    {
+      "runtime": "vintage",
+      "role": "live-in-process-actor-control-and-observation-patterns",
+      "references": [
+        "../vintage/vintage-actors/manifest.json",
+        "../glue/templates/workflow/vintage/actor-control-tick-pipeline.json",
+        "../glue/templates/workflow/vintage/simulation-observation-refresh.json"
+      ]
+    },
+    {
+      "runtime": "burn-the-colonies",
+      "role": "explicit-projected-affordance-and-topology-vocabulary",
+      "references": [
+        "../burn-the-colonies/seeds/nouns/projected-affordance-kinds.json",
+        "../burn-the-colonies/seeds/nouns/projected-affordance-queries.json",
+        "../burn-the-colonies/seeds/nouns/ship-morph-patterns.json",
+        "../burn-the-colonies/seeds/nouns/ship-system-posture-profiles.json"
+      ]
+    }
+  ],
+  "mountProjectionContract": {
+    "mountKey": "lens://rimworld/<mapKey>",
+    "layers": [
+      {
+        "layer": "identity",
+        "purpose": "Stable semantic actor, item, map, room, workshop, and capability references.",
+        "nativeFacts": ["pawn-thing-id", "map-unique-id", "def-name", "workshop-id"],
+        "glueTemplates": ["functional/games/shared/session-viewmodel-mount", "functional/actor/actor-observation-projection"]
+      },
+      {
+        "layer": "observation",
+        "purpose": "Read native needs, jobs, reservations, reachability, map resources, policy state, and extension state.",
+        "authority": "rimworld-native-runtime",
+        "glueTemplates": ["functional/actor/actor-observation-projection", "functional/world/resources/world-affordance-summary.resource"]
+      },
+      {
+        "layer": "affordance",
+        "purpose": "Project candidate actions, policy bundles, detours, resource-network interactions, and capability records from observed evidence.",
+        "authority": "glue-declarative-projection",
+        "glueTemplates": ["functional/actor/affordance/visible-affordance-action-proposal", "functional/actor/items/inventory-affordance-resolver", "functional/actor/spatial/spatial-activity-affordance-projection"]
+      },
+      {
+        "layer": "admission",
+        "purpose": "Ask RimWorld JobGiver, WorkGiver, JobTracker, manager, or named bridge contract to decide legality and execute.",
+        "authority": "rimworld-native-runtime",
+        "glueTemplates": ["functional/actor/affordance/headless-host-capability-admission", "functional/actor/affordance/guarded-action-kernel"]
+      },
+      {
+        "layer": "receipt",
+        "purpose": "Read back native admission, rejection, completion, revision, and remount state using semantic references only.",
+        "authority": "shared-receipt-contract",
+        "glueTemplates": ["functional/actor/affordance/host-affordance-action-receipt-bridge", "functional/games/shared/session-viewmodel-mount"]
+      }
+    ],
+    "persistence": "semantic-refs-and-monotonic-revisions-only",
+    "failureMode": "unsupported-or-illegal-native-action-fails-closed-with-typed-rejection",
+    "hookDiscipline": "attempt-declared-hook-and-record-not-fired-or-native-rejection; never infer success from hook absence"
+  },
+  "concepts": [
+    {
+      "conceptId": "actor-pressure-to-candidate",
+      "summary": "Need pressure and schedule/work context select a candidate without making Glue the game-side scorer.",
+      "corpusPatterns": [
+        {"runtime": "zomboid", "reference": "pawn-need-taxonomy", "contribution": "decay, critical thresholds, mood impact, schedule/work tags"},
+        {"runtime": "glue", "reference": "actor/behavior/arbiter", "contribution": "declarative candidate ranking and eligibility filtering"},
+        {"runtime": "burn-the-colonies", "reference": "needs-and-pressure-patterns", "contribution": "pressure-to-affordance vocabulary"}
+      ],
+      "rimworldTargets": ["rimworld/common-sense", "rimworld/dubs-bad-hygiene"],
+      "projection": {"kind": "need-pressure-candidate", "inputs": ["native-need-facts", "schedule-facts", "room-and-fixture-facts", "urgency-band"], "outputs": ["candidate-intent", "reason-trace", "native-admission-request"]},
+      "nativeAdmission": ["ThinkTreeDef", "JobGiver", "WorkGiverDef", "NeedDef"],
+      "acceptance": "same candidate shape for food, rest, hygiene, and bladder pressure; native fixture, path, and job legality decide admission"
+    },
+    {
+      "conceptId": "haul-and-detour-routing",
+      "summary": "Inventory capacity, route value, and opportunistic detours are candidate evidence; storage, reservation, reachability, and job continuation stay native.",
+      "corpusPatterns": [
+        {"runtime": "zomboid", "reference": "hauling-behaviors", "contribution": "urgency, distance, capacity, work priority, workflow identity"},
+        {"runtime": "glue", "reference": "inventory-affordance-resolver", "contribution": "bounded inventory and item affordance projection"},
+        {"runtime": "burn-the-colonies", "reference": "cargo-retention-and-transfer", "contribution": "cargo transfer as an explicit interaction mode with claims and routes"}
+      ],
+      "rimworldTargets": ["rimworld/pick-up-and-haul", "rimworld/while-youre-up"],
+      "projection": {"kind": "batch-haul-or-conditional-detour", "inputs": ["haulable-facts", "storage-facts", "carry-mass", "current-job-route", "path-cost", "safety-facts"], "outputs": ["semantic-batch", "detour-proposal", "constraint-trace", "resume-original-job"]},
+      "nativeAdmission": ["WorkGiver_HaulToInventory", "JobDriver", "ReservationManager", "Reachability", "PathFinder", "JobDef.allowOpportunisticPrefix"],
+      "acceptance": "admit only a native-valid route; prove queue/readback; reject a detour that does not preserve the original job"
+    },
+    {
+      "conceptId": "policy-posture-and-retained-session",
+      "summary": "Named policy bundles and emergency posture changes are retained mount commands, not client-owned policy serialization.",
+      "corpusPatterns": [
+        {"runtime": "vintage", "reference": "actor-control-tick-pipeline", "contribution": "control scope/mode and explicit command dispatch"},
+        {"runtime": "burn-the-colonies", "reference": "ship-system-posture-profiles", "contribution": "scope, stance, priority, claims, tradeoffs, and quantitative requirements"},
+        {"runtime": "glue", "reference": "session-viewmodel-mount", "contribution": "stable mount key, revision, reconnect, and receipt"}
+      ],
+      "rimworldTargets": ["rimworld/better-pawn-control", "rimworld/achtung"],
+      "projection": {"kind": "policy-bundle-or-explicit-command", "inputs": ["pawn-roster", "map-key", "policy-catalog", "selected-pawn-refs", "native-options", "lifecycle-state"], "outputs": ["policy-intent", "command-intent", "expected-revision", "readback-receipt"]},
+      "nativeAdmission": ["WorkSettings", "TimeAssignmentDef", "AssignManager", "Scribe", "FloatMenuOption", "Pawn_JobTracker", "named-bridge"],
+      "acceptance": "activate by stable map key, save/load, remount, reject stale revision, and never persist native object handles"
+    },
+    {
+      "conceptId": "resource-network-and-body-interface",
+      "summary": "A need can be satisfied through a spatial resource network and a body/fixture interface, not just an actor scalar.",
+      "corpusPatterns": [
+        {"runtime": "burn-the-colonies", "reference": "projected-affordance-kinds", "contribution": "wash, hydrate, triage, maintenance, and command interaction modes with room/fixture/body matchers"},
+        {"runtime": "zomboid", "reference": "pawn-need-taxonomy", "contribution": "need pressure and affordance tags"},
+        {"runtime": "glue", "reference": "spatial-activity-affordance-projection", "contribution": "world and spatial affordance projection"}
+      ],
+      "rimworldTargets": ["rimworld/dubs-bad-hygiene", "rimworld/common-sense"],
+      "projection": {"kind": "resource-network-affordance", "inputs": ["need-facts", "fixture-facts", "room-facts", "water-network-facts", "body-interface-facts", "resource-connectivity"], "outputs": ["interaction-mode", "candidate-intent", "missing-link-diagnostics", "native-admission-request"]},
+      "nativeAdmission": ["NeedDef", "ThingDef", "MapComponent", "JobGiver", "WorkGiverDef", "Reachability"],
+      "acceptance": "project a connected fixture/resource route, expose missing connectivity, and fail closed when the native job system cannot admit it"
+    },
+    {
+      "conceptId": "extension-capability-and-command-surface",
+      "summary": "Complex mod frameworks are capability vocabularies and compatibility surfaces, not gameplay logic to duplicate in Glue.",
+      "corpusPatterns": [
+        {"runtime": "vintage", "reference": "live actor roster/state/community", "contribution": "in-process observation and explicit command scopes"},
+        {"runtime": "burn-the-colonies", "reference": "projected-affordance-queries", "contribution": "capability discovery and queryable evidence"},
+        {"runtime": "glue", "reference": "host-affordance-action-receipt-bridge", "contribution": "capability admission and typed receipt"}
+      ],
+      "rimworldTargets": ["rimworld/vanilla-expanded-framework", "rimworld/achtung"],
+      "projection": {"kind": "capability-catalog-or-explicit-command", "inputs": ["native-defs", "comp-state", "gizmos", "event-context", "available-native-options"], "outputs": ["capability-ref", "mode-state", "command-intent", "readback-receipt"]},
+      "nativeAdmission": ["DefModExtension", "ThingComp", "Gizmo", "Hediff", "Quest", "Harmony", "named-bridge"],
+      "acceptance": "render the capability and mode catalog, then prove one real native option and a typed unsupported-capability rejection"
+    }
+  ],
+  "exampleBuildOrder": [
+    {"priority": "P0", "target": "pick-up-and-haul", "reason": "extends the existing RimWorld haul candidate into inventory queues and constraint traces"},
+    {"priority": "P0", "target": "while-youre-up", "reason": "adds the first compositional detour/resume contract and path-budget evidence"},
+    {"priority": "P0", "target": "dubs-bad-hygiene", "reason": "proves new needs plus resource-network and fixture projection"},
+    {"priority": "P1", "target": "better-pawn-control", "reason": "proves retained policy bundles across map identity and save/load"},
+    {"priority": "P1", "target": "achtung", "reason": "proves explicit multi-actor commands and named bridge readback"},
+    {"priority": "P1", "target": "vanilla-expanded-framework", "reason": "proves extensible capability discovery without framework reimplementation"},
+    {"priority": "P2", "target": "common-sense", "reason": "stress-tests composition and compatibility after the native seams are stable"}
+  ],
+  "nonGoals": [
+    "copy-third-party-source-or-assets",
+    "reimplement-rimworld-pathing-storage-reservation-or-job-legality",
+    "add-a-game-side-glue-scorer",
+    "persist-native-object-handles",
+    "treat-workshop-cache-presence-or-hook-absence-as-execution-proof"
+  ]
+}

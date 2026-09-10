@@ -183,6 +183,53 @@ dependency metadata, and do not bundle its implementation into GlueRimworld.
 
 ## Declarative synthesis for GlueRimworld
 
+### Cross-corpus mount synthesis
+
+The review is now backed by `Seeds/rimworld-cross-corpus-affordance-map.json`, so
+the common model is available to the same embedded editor as the runtime itself.
+It deliberately separates five layers:
+
+| Layer | What is projected | Authority | Example RimWorld evidence |
+|---|---|---|---|
+| Identity | Stable actor, item, map, room, Workshop, and capability refs | Shared semantic contract | pawn Thing ID, map unique ID, Def name, Workshop ID |
+| Observation | Needs, current job, reservations, reachability, resources, policies, extension state | RimWorld native runtime | `Need`, `Pawn_JobTracker`, `MapComponent`, `WorkSettings` |
+| Affordance | Candidate, batch, detour, policy, resource-network, or capability records | Glue declarative templates | `batch-haul`, `haul-on-way`, `wash`, `emergency-policy` |
+| Admission | Job/WorkGiver, JobTracker, manager, or named bridge decision | RimWorld native runtime | `WorkGiver_HaulToInventory`, `JobGiver`, `AssignManager`, `Gizmo` |
+| Receipt | Admission, rejection, completion, revision, and remount state | Shared receipt contract | semantic target refs, typed rejection, monotonic revision |
+
+This synthesis makes the corpus roles precise. Glue supplies the arbiter, guarded
+action, inventory, spatial, capability-admission, and receipt templates. Zomboid
+supplies the portable actor pressure, urgency, schedule, work-priority, and hauling
+shapes. Vintage supplies a live roster/state observation loop plus explicit
+`controlScope`/`controlMode` command semantics. Burn the Colonies supplies the most
+useful noun vocabulary for projected interaction modes, body/fixture matchers,
+topology, claims, tradeoffs, and deterministic plan requests. RimWorld supplies the
+native facts and the final legality boundary.
+
+The mapping yields five reusable build families:
+
+| Existing corpus concept | RimWorld community analogue | First GlueRimworld projection | Missing native seam |
+|---|---|---|---|
+| Zomboid need pressure + Glue arbiter | Common Sense, Dubs Bad Hygiene | Need-pressure candidate | `NeedDef`, `ThinkTreeDef`, `JobGiver`, `WorkGiverDef` |
+| Zomboid hauling + Glue inventory resolver + BTC cargo transfer | Pick Up And Haul, While You're Up | Batch haul or conditional detour | storage, reservation, reachability, pathfinder, native job prefix |
+| Vintage control mode + BTC posture profile + Glue retained mount | Better Pawn Control, Achtung! | Policy bundle or explicit command | Work/Schedule/Assign managers, float-menu eligibility, JobTracker, named bridge |
+| BTC body interface/resource network + Glue spatial projection | Dubs Bad Hygiene, Common Sense | Fixture/resource-network affordance | Need/Thing/MapComponent state and native work admission |
+| BTC capability query + Glue capability receipt | Vanilla Expanded Framework, Achtung! | Extension catalog or explicit command | Def extensions, comps, gizmos, hediffs, quests, multiplayer/bridge state |
+
+The hard rule is unchanged across every family: Glue can rank or describe an
+intent, but it cannot decide whether a cell is reservable, a storage target accepts
+a Thing, a path is legal, a policy is current, or a native job may start. Every
+unsupported or stale request produces a typed rejection. Every attempted hook has
+an explicit `not-fired` or native-rejection outcome; silence is not success.
+
+The recommended example-build order is now explicit: Pick Up And Haul, While You're
+Up, and Dubs Bad Hygiene are the P0 stress targets; Better Pawn Control, Achtung!,
+and Vanilla Expanded Framework are P1 policy/command/extensibility targets; Common
+Sense is P2 composition and compatibility stress. Each target is a declarative
+fixture over the same `lens://rimworld/<mapKey>` mount, so the editor should render
+the same identity/observation/affordance/admission/receipt shape as GlueZomboid even
+when the native seam differs.
+
 Every reviewed mechanic can be normalized to this record shape:
 
 ```json

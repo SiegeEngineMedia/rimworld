@@ -20,6 +20,10 @@ projects, admits, observes, and reconciles.
   renderer projection with zero targeted bridge/host errors.
 - The adapter contains no behavior scorer. Candidate selection is declarative;
   native JobGiver/WorkGiver checks remain authoritative and fail closed.
+- The Workshop review now has an editor-visible cross-corpus map in
+  `Seeds/rimworld-cross-corpus-affordance-map.json`. It binds the Zomboid,
+  Vintage, Burn-the-Colonies, and shared Glue patterns to RimWorld example
+  targets without importing their implementations.
 
 ## Required release order
 
@@ -46,6 +50,10 @@ projects, admits, observes, and reconciles.
    declared tooling path.
 7. Re-run the shared RimWorld/Zomboid mount-parity fixture and package only
    after the parity output is byte-stable across consecutive runs.
+8. Promote the cross-corpus P0 fixtures in order: batch haul, conditional detour,
+   then need/resource-network projection. For each, prove declarative selection,
+   native admission or typed rejection, receipt/readback, and save-safe semantic
+   references before adding another adapter seam.
 
 ## Remaining gates
 

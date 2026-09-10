@@ -64,6 +64,12 @@
           "schema": "definition://rimworld-workshop-structural-review",
           "description": "Bounded structural review contract for only the catalog's known Workshop payload roots; emits metadata, capability evidence, and explicit missing/version-gap facts without enabling or copying third-party files."
         },
+        "GLUE_RimworldCrossCorpusAffordanceMap": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-cross-corpus-affordance-map.json",
+          "schema": "definition://cross-runtime-affordance-map",
+          "description": "Declarative synthesis mapping Glue, GlueZomboid, Vintage actors, and Burn the Colonies concepts onto RimWorld Workshop mechanics, native admission seams, and publishable acceptance fixtures."
+        },
         "GLUE_RimworldHelpToolingLensPolicy": {
           "type": "seed-catalog",
           "seed": "Seeds/rimworld-help-tooling-lens-policy.json",
