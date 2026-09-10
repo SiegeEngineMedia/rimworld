@@ -1,0 +1,116 @@
+{
+  "$schema": "definition://actor-corpus-efficacy-profile",
+  "profileId": "rimworld-actor-corpus-efficacy-v1",
+  "title": "RimWorld actor corpus efficacy ladder",
+  "manifestUnderTest": "Seeds/rimworld-actors-tenant-manifest.json",
+  "purpose": "Test the shared GlueActors component tree in RimWorld while keeping declarative selection, native legality, execution, and receipt evidence distinct.",
+  "evidenceClasses": {
+    "declared": "JSON parses, shared references resolve, and the tenant is registered as an editor-visible datasource.",
+    "engine": "The shared Glue template returns a structured result and verified workflow receipt.",
+    "native": "RimWorld observes native facts, admits or rejects a candidate through its own JobGiver/WorkGiver boundary, and emits a read-back receipt.",
+    "lifecycle": "The mount persists and reads back across save/load and host outage/reconnect while preserving semantic identity.",
+    "efficacy": "Repeated fixtures produce the intended native state transition, rejection behavior, and reconciliation outcome; one successful receipt is not sufficient."
+  },
+  "currentEvidence": [
+    {
+      "id": "tenant-manifest-structure",
+      "class": "declared",
+      "status": "passed",
+      "evidence": "GlueRimworld/manifest.json registers the tenant manifest and the shared actor-domain manifest reference resolves from the seed location."
+    },
+    {
+      "id": "tenant-manifest-runtime-consumption",
+      "class": "native",
+      "status": "not-proven",
+      "evidence": "RimworldSeedCatalog currently loads the local need, schedule, skill, and candidate seeds directly; it does not parse the tenant manifest or shared domain manifest."
+    },
+    {
+      "id": "shared-day-tick-selection",
+      "class": "engine",
+      "status": "passed-historical",
+      "evidence": "work/deterministic-native-quicktest.log and work/live-reconnect-quicktest.log record eat-meal selection with receiptVerified=True."
+    },
+    {
+      "id": "native-eat-meal-admission",
+      "class": "native",
+      "status": "passed-historical",
+      "evidence": "work/deterministic-native-quicktest.log records native JobGiver status=admitted:eat-meal and verified native receipts for two pawns."
+    },
+    {
+      "id": "native-candidate-family-coverage",
+      "class": "efficacy",
+      "status": "partial",
+      "evidence": "The candidate pack declares eat-meal, rest-in-bed, haul-designated, and construct-designated, but the retained native logs only show admitted eat-meal."
+    },
+    {
+      "id": "mount-persistence-and-reconnect",
+      "class": "lifecycle",
+      "status": "passed-historical",
+      "evidence": "The native and reconnect logs record persisted/read-back mount heartbeats; the reconnect log records bounded failures followed by successful hour-9 remount activity."
+    },
+    {
+      "id": "latest-live-run-identity",
+      "class": "native",
+      "status": "not-applicable",
+      "evidence": "The current Player.log quicktest command contains vanilla DLC initialization but no GlueRimworld load marker; it must not be counted as a Glue actor test."
+    },
+    {
+      "id": "nographics-run-health",
+      "class": "native",
+      "status": "rejected",
+      "evidence": "work/mod-enabled-quicktest-2.log contains shader errors and repeated post-long-event NullReferenceException noise; it is unsuitable as a clean efficacy run."
+    }
+  ],
+  "scenarioMatrix": [
+    {
+      "scenarioId": "eat-meal",
+      "candidateId": "eat-meal",
+      "nativeBoundary": "JobGiver",
+      "expected": ["selected", "admitted", "native-receipt-verified", "pawn-job-readback"],
+      "currentStatus": "historically-proven"
+    },
+    {
+      "scenarioId": "rest-in-bed",
+      "candidateId": "rest-in-bed",
+      "nativeBoundary": "JobGiver",
+      "expected": ["selected", "admitted-or-typed-rejection", "receipt-verified", "native-state-readback"],
+      "currentStatus": "fixture-required"
+    },
+    {
+      "scenarioId": "haul-designated",
+      "candidateId": "haul-designated",
+      "nativeBoundary": "WorkGiver",
+      "expected": ["designated-target-observed", "reservation-aware-admission-or-typed-rejection", "receipt-verified"],
+      "currentStatus": "fixture-required"
+    },
+    {
+      "scenarioId": "construct-designated",
+      "candidateId": "construct-designated",
+      "nativeBoundary": "WorkGiver_Scanner",
+      "expected": ["blueprint-observed", "material-and-reachability-admission-or-typed-rejection", "receipt-verified"],
+      "currentStatus": "mapping-declared-but-fixture-required"
+    },
+    {
+      "scenarioId": "host-outage-reconnect",
+      "candidateId": "eat-meal",
+      "nativeBoundary": "mount-and-reconciliation",
+      "expected": ["bounded-failure", "no-phantom-success", "same-session-remount", "receipt-readback"],
+      "currentStatus": "historically-proven"
+    }
+  ],
+  "passPolicy": {
+    "freshRunRequired": true,
+    "historicalEvidenceMayEstablish": ["implemented-path", "previously-observed-behavior", "known-negative-case"],
+    "historicalEvidenceMayNotEstablish": ["current-install-health", "full-corpus-efficacy", "publishability"],
+    "unsupportedCandidates": "remain declared and fail closed until native admission and readback are observed",
+    "minimumPublishableCoverage": ["all universal domains have an observation receipt", "at least one positive and one typed rejection per native boundary", "save-load semantic identity continuity", "host reconnect reconciliation", "fresh clean run with zero targeted bridge errors"]
+  },
+  "nextDeclarativeFixtures": [
+    "rimworld-actors/observation-all-domains-v1",
+    "rimworld-actors/rest-and-recovery-v1",
+    "rimworld-actors/haul-reservation-v1",
+    "rimworld-actors/construct-materials-v1",
+    "rimworld-actors/social-community-v1",
+    "rimworld-actors/health-treatment-v1"
+  ]
+}

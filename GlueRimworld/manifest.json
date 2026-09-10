@@ -76,6 +76,12 @@
           "schema": "definition://actor-tenant-manifest",
           "description": "RimWorld's editor-visible actor tenant composition. It reuses the shared Glue actor manifest and universal seed domains, then adds only RimWorld-native colony extensions and adapter boundaries."
         },
+        "GLUE_RimworldActorCorpusEfficacyProfile": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-actor-corpus-efficacy-profile.json",
+          "schema": "definition://actor-corpus-efficacy-profile",
+          "description": "Declarative evidence ladder for separating manifest visibility, Glue execution, native RimWorld admission, lifecycle behavior, and repeated actor efficacy. Historical receipts are evidence inputs, not fresh-run claims."
+        },
         "GLUE_RimworldHelpToolingLensPolicy": {
           "type": "seed-catalog",
           "seed": "Seeds/rimworld-help-tooling-lens-policy.json",

@@ -69,6 +69,12 @@ honest, disclosed limits of this pass.
   for the same shared actor component-tree architecture used by GlueActors. It
   keeps universal domains canonical in Glue and makes RimWorld's colony-specific
   observation/admission extensions explicit.
+- `Seeds/rimworld-actor-corpus-efficacy-profile.json` and
+  `docs/reports/2026-09-09-actor-corpus-rimworld-efficacy-review.md` separate
+  editor-visible declaration, shared-engine execution, native admission,
+  lifecycle receipts, and repeated efficacy. The retained proof currently covers
+  `eat-meal` plus mount reconnect; the other declared candidate families remain
+  fixture-required.
 - `Seeds/` holds the RimWorld-specific adapter tables (`NeedDef` -> glue need key,
   `TimeAssignmentDef` -> schedule mode, and the relocated `pawn-skill-taxonomy.json`
   that the Z-1 lane left behind) -- genuinely new content for this integration, kept

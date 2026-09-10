@@ -29,6 +29,11 @@ projects, admits, observes, and reconciles.
   plus a thin native extension layer. Glue now owns the canonical domain manifest
   and GlueActors has a declared mirror entry; the generated mod copy still needs a
   sanctioned sync/build run before it is treated as live payload.
+- `Seeds/rimworld-actor-corpus-efficacy-profile.json` now records the evidence
+  ladder and historical limits explicitly. The retained native proof is real but
+  narrow: `eat-meal`, mount persistence, and reconnect are observed; the tenant
+  composition itself is not yet consumed by `RimworldSeedCatalog`, and the other
+  candidate families still need clean native fixtures.
 
 ## Required release order
 
