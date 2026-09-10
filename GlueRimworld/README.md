@@ -81,6 +81,11 @@ honest, disclosed limits of this pass.
   freshness announcements, typed gaps, and read-only refresh/inspect actions.
   It deliberately does not claim a native RimWorld UI accessibility tree or
   permit pixel, OCR, coordinate, or display-name control.
+- `Seeds/rimworld-playable-ui-surface.json` is the whole-game playability
+  contract. It inventories the main menu, colony shell, time/camera, selection,
+  work, architect, inventory, health, social, combat, world-map, dialogs, and
+  save/recovery surfaces. It is intentionally `declared-not-live` until the
+  native survey/dispatch/readback seams produce fresh receipts.
 - `Seeds/` holds the RimWorld-specific adapter tables (`NeedDef` -> glue need key,
   `TimeAssignmentDef` -> schedule mode, and the relocated `pawn-skill-taxonomy.json`
   that the Z-1 lane left behind) -- genuinely new content for this integration, kept

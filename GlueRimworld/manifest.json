@@ -88,6 +88,12 @@
           "schema": "definition://rimworld-accessibility-lens",
           "description": "Renderer-neutral semantic accessibility contract for the retained RimWorld colony mount: stable actor identity, bounded navigation, native freshness, typed status announcements, and read-only refresh/inspect affordances."
         },
+        "GLUE_RimworldPlayableUiSurface": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-playable-ui-surface.json",
+          "schema": "definition://game-playable-proof-artifact",
+          "description": "Declarative whole-game UI playability contract. It inventories every player-facing RimWorld surface and requires native survey, semantic dispatch, readback, and lifecycle receipts before any surface is called playable."
+        },
         "GLUE_RimworldHelpToolingLensPolicy": {
           "type": "seed-catalog",
           "seed": "Seeds/rimworld-help-tooling-lens-policy.json",

@@ -1,0 +1,278 @@
+{
+  "$schema": "definition://game-playable-proof-artifact",
+  "key": "rimworld-playable-ui-surface",
+  "title": "RimWorld fully playable semantic UI surface",
+  "description": "Host-side accessibility contract for playing RimWorld through a semantic UI surface. The native game remains authoritative for UI state, selection, legality, reservations, jobs, map state, and save lifecycle. Glue provides the renderer-neutral tree, stable locators, declared actions, focus order, and receipts.",
+  "declarativeOnly": true,
+  "gameKey": "rimworld",
+  "proofKind": "playable-contract",
+  "status": "declared-not-live",
+  "accessibilityLensRef": "GLUE_RimworldAccessibilityLens",
+  "mountPolicyRef": "lens://rimworld",
+  "nativeAuthority": "rimworld-native-ui-and-simulation",
+  "uiSurfaces": [
+    "rimworld-main-menu",
+    "rimworld-load-save-dialog",
+    "rimworld-colony-shell",
+    "rimworld-time-controls",
+    "rimworld-camera-navigation",
+    "rimworld-selection-and-inspector",
+    "rimworld-colonist-work-and-schedule",
+    "rimworld-architect-and-designations",
+    "rimworld-inventory-and-transfer",
+    "rimworld-health-and-medical",
+    "rimworld-social-and-faction",
+    "rimworld-threat-and-combat",
+    "rimworld-world-map-and-travel",
+    "rimworld-save-and-recovery",
+    "rimworld-dialog-and-float-menu"
+  ],
+  "entrySurface": "rimworld-main-menu",
+  "playerActions": [
+    "start or load a colony",
+    "pause, resume, and change simulation speed",
+    "navigate the camera and select semantic map targets",
+    "inspect colonists, animals, items, buildings, blueprints, and incidents",
+    "assign work priorities and time assignments",
+    "draft, undraft, move, and prioritize a colonist",
+    "place, cancel, and prioritize a blueprint or designation",
+    "open, transfer, equip, consume, and drop inventory items",
+    "inspect health, assign treatment, and respond to medical rejection",
+    "inspect social/faction state and respond to dialogs or letters",
+    "draft combatants, choose a legal target, and issue a native combat job",
+    "open the world map, inspect a tile, and travel when native legality permits",
+    "save, load, recover, and resume the same semantic session"
+  ],
+  "playableLoop": [
+    "open the main menu through the semantic tree",
+    "start or load a deterministic colony and obtain a session/revision receipt",
+    "survey the current native UI and colony projection",
+    "select a colonist or target by stable semantic locator, never display name alone",
+    "inspect native facts and available actions",
+    "submit one declared action with the current snapshot and expected revision",
+    "allow RimWorld's native UI or JobGiver/WorkGiver to admit or reject it",
+    "read back the resulting UI state, native job state, and typed receipt",
+    "save and reload, then reconcile session, selection, and actor identity",
+    "continue through the same tree without hidden coordinate or host-only steps"
+  ],
+  "semanticTree": {
+    "root": {
+      "id": "rimworld-ui-session-<sessionKey>",
+      "role": "application",
+      "accessibleName": "RimWorld",
+      "childrenOrder": ["status", "navigation", "world", "selection", "actions", "dialogs", "diagnostics"]
+    },
+    "requiredNodeFields": ["id", "role", "accessibleName", "state", "actions", "locator", "nativeRevision"],
+    "roles": ["application", "banner", "navigation", "main", "region", "list", "listitem", "tree", "treeitem", "dialog", "menu", "menuitem", "button", "checkbox", "slider", "combobox", "textbox", "status", "log"],
+    "identity": {
+      "sessionKey": "required",
+      "nativeRevision": "required",
+      "snapshotId": "required-for-dispatch",
+      "actorKey": "rimworld-pawn-<thingIDNumber>",
+      "targetKey": "native-semantic-target-within-session",
+      "displayNameTargeting": "forbidden"
+    },
+    "boundedProjection": {
+      "maxDepth": 12,
+      "maxNodes": 2048,
+      "maxActors": 64,
+      "maxDiagnostics": 128,
+      "truncationOutcome": "ui.projection.truncated"
+    }
+  },
+  "surfaceContracts": [
+    {
+      "surfaceKey": "rimworld-main-menu",
+      "status": "deferred-native-survey",
+      "role": "application-entry",
+      "requiredControls": ["new-colony", "load-colony", "options", "quit"],
+      "nativeAuthority": "RimWorld main-menu WindowStack and dialogs",
+      "proofCase": "open-menu-select-load-or-new-and-readback"
+    },
+    {
+      "surfaceKey": "rimworld-load-save-dialog",
+      "status": "deferred-native-survey",
+      "role": "dialog",
+      "requiredControls": ["save-row", "load-row", "confirm", "cancel", "delete-rejected-unless-explicit"],
+      "nativeAuthority": "RimWorld save/load dialogs and filesystem lifecycle",
+      "proofCase": "save-load-session-identity-continuity"
+    },
+    {
+      "surfaceKey": "rimworld-colony-shell",
+      "status": "partial-semantic-mount-proven",
+      "role": "main",
+      "requiredControls": ["colony-status", "colonist-roster", "diagnostics", "refresh", "inspect"],
+      "nativeAuthority": "native map, pawn roster, and WindowStack",
+      "proofCase": "mount-refresh-inspect-and-readback"
+    },
+    {
+      "surfaceKey": "rimworld-time-controls",
+      "status": "deferred-native-dispatch",
+      "role": "toolbar",
+      "requiredControls": ["pause", "play", "speed-1x", "speed-2x", "speed-3x", "speed-4x"],
+      "nativeAuthority": "Find.TickManager and native time-control widgets",
+      "proofCase": "pause-speed-change-and-native-tick-readback"
+    },
+    {
+      "surfaceKey": "rimworld-camera-navigation",
+      "status": "deferred-native-dispatch",
+      "role": "region",
+      "requiredControls": ["pan-north", "pan-south", "pan-east", "pan-west", "zoom-in", "zoom-out", "center-selection"],
+      "nativeAuthority": "UIRoot camera controller and map bounds",
+      "proofCase": "navigate-to-semantic-target-without-screen-coordinates"
+    },
+    {
+      "surfaceKey": "rimworld-selection-and-inspector",
+      "status": "deferred-native-survey",
+      "role": "region",
+      "requiredControls": ["select-pawn", "select-thing", "select-blueprint", "inspect", "deselect"],
+      "nativeAuthority": "Selector, InspectPane, Thing and Blueprint selection",
+      "proofCase": "select-by-locator-inspect-and-readback"
+    },
+    {
+      "surfaceKey": "rimworld-colonist-work-and-schedule",
+      "status": "declarative-seeds-partial",
+      "role": "region",
+      "requiredControls": ["work-priority", "time-assignment", "force-work", "draft-toggle", "prioritize-job"],
+      "nativeAuthority": "WorkSettings, TimeAssignmentDef, JobTracker, and native work givers",
+      "proofCase": "change-work-setting-and-observe-native-assignment"
+    },
+    {
+      "surfaceKey": "rimworld-architect-and-designations",
+      "status": "deferred-native-dispatch",
+      "role": "region",
+      "requiredControls": ["architect-category", "build-blueprint", "mine-designation", "haul-designation", "cancel-designation", "prioritize-designation"],
+      "nativeAuthority": "Architect and Designator systems, reservations, reachability, and resource legality",
+      "proofCase": "place-blueprint-admit-or-type-rejection-and-readback"
+    },
+    {
+      "surfaceKey": "rimworld-inventory-and-transfer",
+      "status": "deferred-native-dispatch",
+      "role": "region",
+      "requiredControls": ["open-inventory", "select-stack", "transfer", "equip", "consume", "drop"],
+      "nativeAuthority": "ThingOwner, transfer dialogs, MassUtility, reservations, and reachability",
+      "proofCase": "transfer-stack-and-verify-counts"
+    },
+    {
+      "surfaceKey": "rimworld-health-and-medical",
+      "status": "declarative-domain-declared",
+      "role": "region",
+      "requiredControls": ["health-summary", "hediff-detail", "assign-treatment", "tend", "medicine-choice"],
+      "nativeAuthority": "HediffSet, HealthUtility, DoctorCareUtility, and medical JobGivers",
+      "proofCase": "medical-action-admitted-or-typed-rejection"
+    },
+    {
+      "surfaceKey": "rimworld-social-and-faction",
+      "status": "declarative-domain-declared",
+      "role": "region",
+      "requiredControls": ["relations", "mood", "faction", "guest", "letter", "dialog-choice"],
+      "nativeAuthority": "ThoughtHandler, Pawn relations, Faction, LetterStack, and LordManager",
+      "proofCase": "inspect-social-state-and-respond-to-native-dialog"
+    },
+    {
+      "surfaceKey": "rimworld-threat-and-combat",
+      "status": "deferred-native-dispatch",
+      "role": "region",
+      "requiredControls": ["draft", "undraft", "move", "attack-target", "flee", "overwatch-or-native-equivalent"],
+      "nativeAuthority": "drafting, targeter, combat JobGivers, reservations, reachability, and threat state",
+      "proofCase": "combat-target-legal-or-typed-rejection"
+    },
+    {
+      "surfaceKey": "rimworld-world-map-and-travel",
+      "status": "deferred-native-survey",
+      "role": "region",
+      "requiredControls": ["open-world-map", "select-tile", "inspect-settlement", "form-caravan", "travel", "return-to-colony"],
+      "nativeAuthority": "World, tile, caravan, faction, and route systems",
+      "proofCase": "world-map-inspect-and-travel-legality"
+    },
+    {
+      "surfaceKey": "rimworld-save-and-recovery",
+      "status": "partial-lifecycle-proven",
+      "role": "region",
+      "requiredControls": ["save", "load", "recover-session", "reconcile-selection", "resume"],
+      "nativeAuthority": "RimWorld save/load lifecycle and native revision",
+      "proofCase": "save-load-reconnect-and-no-state-drift"
+    },
+    {
+      "surfaceKey": "rimworld-dialog-and-float-menu",
+      "status": "deferred-native-survey",
+      "role": "dialog",
+      "requiredControls": ["list-option", "confirm", "cancel", "dismiss", "set-text", "choose-target"],
+      "nativeAuthority": "WindowStack, FloatMenu, Dialog_MessageBox, and native targeters",
+      "proofCase": "dialog-choice-by-semantic-locator"
+    }
+  ],
+  "dispatchContract": {
+    "surveyRoute": "native-rimworld-accessibility-survey",
+    "dispatchRoute": "native-rimworld-accessibility-dispatch",
+    "readbackRoute": "native-rimworld-accessibility-readback",
+    "actions": ["activate", "dismiss", "set-value", "toggle", "choose", "increment", "decrement", "submit", "cancel"],
+    "requires": ["sessionKey", "snapshotId", "nativeRevision", "locator", "action"],
+    "freshSurveyBeforeDispatch": true,
+    "staleSnapshotPolicy": "re-survey-and-reject-if-target-is-not-currently-reachable",
+    "targetPolicy": "stable-semantic-locator-only",
+    "coordinateDispatch": false,
+    "optimisticMutation": false,
+    "nativeActionReceiptRequired": true
+  },
+  "focusAndKeyboard": {
+    "order": "authored-semantic-tree-order",
+    "activationKeys": ["Enter", "Space"],
+    "navigationKeys": ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End", "Tab", "Shift+Tab"],
+    "dialogKeys": ["Escape", "Enter"],
+    "noPositiveTabIndex": true,
+    "selectionSeparateFromFocus": true,
+    "focusReturn": "previous-semantic-node-after-native-state-change"
+  },
+  "receiptContract": {
+    "schema": "definition://rimworld-ui-action-receipt",
+    "required": ["sessionKey", "snapshotId", "nativeRevision", "locator", "action", "outcome", "nativeStateReadback", "diagnostics"],
+    "outcomes": ["admitted", "completed", "rejected", "stale", "unavailable", "pending", "not-fired", "disconnected", "reconciled"],
+    "rejectionCodes": ["ui.target.unavailable", "ui.snapshot.stale", "ui.action.illegal", "ui.dialog.unavailable", "ui.native-hook.not-fired", "ui.native-bridge.disconnected"],
+    "noStateDriftOnReject": true,
+    "persistedFields": ["sessionKey", "nativeRevision", "actionId", "outcome", "rejectionCode", "observedAt"]
+  },
+  "successState": "A player can enter, observe, select, act, receive native admission/readback, save, reload, and resume using only the semantic UI tree and declared controls.",
+  "failureState": "Any missing native surface, stale locator, unavailable dialog, failed hook, or illegal action is exposed as a bounded typed receipt with no guessed target and no state drift.",
+  "firstProofCases": [
+    {
+      "name": "semantic-entry-and-load",
+      "given": "RimWorld is at the main menu",
+      "when": "the player surveys the tree and activates a declared load/new action",
+      "then": "the native dialog transition and resulting session are read back by semantic identity"
+    },
+    {
+      "name": "colony-observe-select-and-inspect",
+      "given": "a deterministic colony is loaded",
+      "when": "the player surveys, selects a colonist by actor key, and inspects it",
+      "then": "native selection, actor observation, revision, and accessible state are read back"
+    },
+    {
+      "name": "native-action-and-rejection",
+      "given": "a colonist and legal/illegal target pair",
+      "when": "the player submits the same semantic action against both targets",
+      "then": "one native action is admitted and the other returns a typed rejection without state drift"
+    },
+    {
+      "name": "save-load-reconcile",
+      "given": "a colony with a selected colonist and pending observation",
+      "when": "the player saves, reloads, and resumes through the semantic tree",
+      "then": "session identity and native revision reconcile, stale locators are rejected, and focus returns semantically"
+    }
+  ],
+  "evidencePolicy": {
+    "declarationIsNotProof": true,
+    "historicalReceiptsMayEstablish": ["previously-observed-native-path", "implemented-hook-path"],
+    "freshNativeProofRequiredFor": ["current-live-ui-tree", "screen-reader-output", "whole-game-playability", "publishability"],
+    "forbiddenEvidence": ["ocr-only", "coordinate-click-only", "pixel-template-matching-only", "display-name-only-targeting", "direct-file-write-substitute"],
+    "hookPolicy": "record not-fired and pending states; never silently drop a hook because it was not observed"
+  },
+  "deferredNativeSeams": [
+    "native RimWorld WindowStack and UIElement accessibility survey",
+    "semantic locator resolution for map/camera/selection targets",
+    "logical dispatch into native controls without coordinate fallbacks",
+    "native dialog, FloatMenu, targeter, and keyboard event lowering",
+    "screen-reader output and focus behavior verification",
+    "fresh end-to-end proof across all listed gameplay surfaces"
+  ]
+}

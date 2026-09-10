@@ -39,6 +39,10 @@ projects, admits, observes, and reconciles.
   names, keyboard/list navigation, freshness and not-fired announcements, and
   read-only refresh/inspect actions. Native ISUI tree serialization and actual
   screen-reader output remain explicit deferred seams.
+- `Seeds/rimworld-playable-ui-surface.json` now inventories the full semantic
+  gameplay contract, from main-menu entry through colony actions and save/load
+  recovery. It remains `declared-not-live`: every native UI family must earn a
+  fresh survey, semantic dispatch, native readback, and typed-rejection receipt.
 
 ## Required release order
 
