@@ -39,6 +39,7 @@
     <Compile Include="PawnBehaviorBridge.cs" />
     <Compile Include="RimworldSeedCatalog.cs" />
     <Compile Include="CanonicalLensReceiptClient.cs" />
+    <Compile Include="RimworldUIAccessibilityProjection.cs" />
   </ItemGroup>
 
   <!-- RimWorld / Unity assemblies use real HintPaths against the installed game. -->

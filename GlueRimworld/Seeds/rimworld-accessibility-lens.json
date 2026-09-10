@@ -14,6 +14,15 @@
     "pixelOrCoordinateInput": false,
     "ocrInput": false
   },
+  "nativeObservation": {
+    "projectionSchema": "definition://rimworld-ui-accessibility-snapshot",
+    "status": "partial-native-observation",
+    "surveys": ["WindowStack", "Selector.SingleSelectedThing"],
+    "transport": "retained-mount-heartbeat",
+    "snapshotAddressing": ["sessionKey", "snapshotId", "nativeRevision"],
+    "dispatchable": false,
+    "diagnostic": "This snapshot exposes native context for editor visibility; it is not yet a complete native UI accessibility tree."
+  },
   "treeContract": {
     "root": {
       "id": "rimworld-colony-<mapId>",

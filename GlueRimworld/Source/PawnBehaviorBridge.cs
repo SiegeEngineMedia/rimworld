@@ -448,7 +448,9 @@ namespace GlueRimworld
                     ["diagnosticCode"] = JValue.CreateNull(),
                     ["nextAction"] = "none"
                 },
-                ["worldObservability"] = freshness
+                ["worldObservability"] = freshness,
+                ["uiAccessibility"] = RimworldUIAccessibilityProjection.BuildSnapshot(
+                    map, ticksGame, _mountSessionKey, _mountWorldRevision)
             };
         }
 
@@ -516,6 +518,8 @@ namespace GlueRimworld
                         ["message"] = "Native RimWorld map facts are authoritative; Glue projects them."
                     }
                 },
+                ["accessibilitySnapshot"] = RimworldUIAccessibilityProjection.BuildSnapshot(
+                    map, ticksGame, _mountSessionKey, _mountWorldRevision),
                 ["rings"] = new JObject
                 {
                     ["contractRef"] = "definition://rings",

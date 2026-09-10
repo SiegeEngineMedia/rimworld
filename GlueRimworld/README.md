@@ -86,6 +86,12 @@ honest, disclosed limits of this pass.
   work, architect, inventory, health, social, combat, world-map, dialogs, and
   save/recovery surfaces. It is intentionally `declared-not-live` until the
   native survey/dispatch/readback seams produce fresh receipts.
+- The mod now adds a bounded native observation increment through the retained
+  mount envelope: `RimworldUIAccessibilityProjection` surveys the authoritative
+  `WindowStack` and `Selector.SingleSelectedThing` and emits a snapshot ID,
+  native revision, semantic locators, and typed partial-surface diagnostics.
+  This improves editor visibility while remaining explicitly non-dispatchable;
+  it does not claim a complete ISUI tree or screen-reader path.
 - `Seeds/` holds the RimWorld-specific adapter tables (`NeedDef` -> glue need key,
   `TimeAssignmentDef` -> schedule mode, and the relocated `pawn-skill-taxonomy.json`
   that the Z-1 lane left behind) -- genuinely new content for this integration, kept

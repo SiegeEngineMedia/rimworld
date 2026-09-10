@@ -18,7 +18,7 @@ fire.
 | Layer | Surface families | Current state |
 |---|---|---|
 | Entry | main menu, load/save, dialogs | declared; native survey deferred |
-| Core play | colony shell, time, camera, selection, inspector | colony projection partially proven; UI dispatch deferred |
+| Core play | colony shell, time, camera, selection, inspector | colony projection and bounded native WindowStack/Selector observation partially proven; UI dispatch deferred |
 | Colony management | work, schedule, architect, designations, inventory | declarative domains exist; native UI proof deferred |
 | Actor care | health, medical, social, faction | domain contracts declared; native UI proof deferred |
 | Conflict/world | combat, threat, world map, travel | native targeter and route proof deferred |
@@ -60,5 +60,8 @@ hook remains visible as `not-fired` or `pending`.
 The current RimWorld bridge has real observation and native `eat-meal` receipt
 evidence, but it does not yet expose a native RimWorld UI tree or logical UI
 dispatcher. Therefore this plan is a publishable declaration of the finish line,
-not a claim that the whole game is currently playable through the lens.
-
+not a claim that the whole game is currently playable through the lens. The first
+native UI observation increment now travels in the retained mount envelope as a
+bounded snapshot of open `WindowStack` entries and the native single selection;
+it is explicitly `partial-native-observation` and `dispatchable: false` until
+semantic controls and native readback are implemented.

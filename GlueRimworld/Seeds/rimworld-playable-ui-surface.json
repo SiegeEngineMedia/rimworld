@@ -10,6 +10,16 @@
   "accessibilityLensRef": "GLUE_RimworldAccessibilityLens",
   "mountPolicyRef": "lens://rimworld",
   "nativeAuthority": "rimworld-native-ui-and-simulation",
+  "nativeObservation": {
+    "status": "partial-native-observation",
+    "projectionKey": "rimworld-ui-accessibility-snapshot",
+    "transport": "retained-mount-heartbeat",
+    "surveys": ["WindowStack", "Selector.SingleSelectedThing"],
+    "snapshotAddressing": ["sessionKey", "snapshotId", "nativeRevision"],
+    "boundedWindows": 64,
+    "dispatchable": false,
+    "deferred": ["semantic control enumeration", "logical action lowering", "native readback receipts"]
+  },
   "uiSurfaces": [
     "rimworld-main-menu",
     "rimworld-load-save-dialog",
