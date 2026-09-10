@@ -4,8 +4,10 @@
   "runtime": "rimworld",
   "gameAppId": "294100",
   "catalogId": "rimworld-workshop-affordances-v1",
+  "lensPolicyId": "rimworld-help-tooling-lens-policy-v1",
   "workshopRootRelative": "steamapps/workshop/content/294100",
   "scanPolicy": "known-catalog-payload-roots-only",
+  "acquisitionMode": "steam-cache-fallback",
   "allowedWorkshopIds": [
     "1561769193",
     "1279012058",
@@ -52,6 +54,7 @@
   "receipt": {
     "schema": "definition://rimworld-workshop-structural-review-receipt",
     "bounded": true,
+    "lensPolicyId": "rimworld-help-tooling-lens-policy-v1",
     "requires": [
       "known-catalog-ids-only",
       "deterministic-ordering",

@@ -1,0 +1,56 @@
+{
+  "$schema": "definition://rimworld-help-tooling-lens-policy",
+  "policyId": "rimworld-help-tooling-lens-policy-v1",
+  "runtime": "rimworld",
+  "purpose": "Keep Workshop acquisition, structural review, and embedded-editor validation on declared Glue routes while making every capacity-safe fallback explicit.",
+  "primaryRoutes": {
+    "workshopAcquisition": "glue-template:mod-management/managers/steamcmd-workshop-command-plan",
+    "workshopNormalization": "glue-template:mod-management/catalog/workshop-profile-plan",
+    "editorLifecycle": "glue-editor:open-status-validate-save-close",
+    "runtimeReceipt": "glue-host:declared-template-execution-receipt"
+  },
+  "sanctionedFallbacks": {
+    "steam-cache-fallback": {
+      "evidence": ["steam-workshop-manifest", "known-payload-root", "about-xml"],
+      "scope": "catalog-workshop-ids-only",
+      "mutatesLiveMods": false,
+      "equivalentToPrimary": false,
+      "requiredReceiptFields": ["fallbackReason", "cacheManifest", "payloadIds", "versionGaps"]
+    },
+    "source-checkout-fallback": {
+      "evidence": ["pinned-public-source-revision", "reviewed-source-paths"],
+      "scope": "catalog-mods-only",
+      "mutatesLiveMods": false,
+      "equivalentToPrimary": false,
+      "requiredReceiptFields": ["fallbackReason", "sourceRevision", "reviewedPaths"]
+    },
+    "bounded-host-fallback": {
+      "evidence": ["declared-template", "host-ping", "structured-assertions"],
+      "scope": "no-game-launch",
+      "equivalentToPrimary": false,
+      "editorLifecycleGateRemainsOpen": true,
+      "requiredReceiptFields": ["fallbackReason", "hostProfile", "template", "assertions", "deferredEditorGate"]
+    }
+  },
+  "forbiddenBypasses": [
+    "arbitrary-workshop-id-scan",
+    "copy-payload-into-live-rimworld-mods-directory",
+    "direct-jsonl-or-file-write-as-editor-lifecycle-substitute",
+    "claim-editor-validation-from-direct-api-execution",
+    "claim-subscription-from-cache-presence-alone",
+    "native-legality-inference-from-structural-filename-evidence"
+  ],
+  "receiptContract": {
+    "schema": "definition://rimworld-help-tooling-lens-receipt",
+    "required": [
+      "policyId",
+      "primaryRoute",
+      "routeUsed",
+      "fallbackUsed",
+      "fallbackReason",
+      "equivalenceClaim",
+      "deferredGates"
+    ],
+    "equivalenceClaimValues": ["primary-route", "bounded-fallback-not-equivalent", "unavailable"]
+  }
+}

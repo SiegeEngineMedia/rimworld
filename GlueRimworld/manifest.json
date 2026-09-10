@@ -64,6 +64,12 @@
           "schema": "definition://rimworld-workshop-structural-review",
           "description": "Bounded structural review contract for only the catalog's known Workshop payload roots; emits metadata, capability evidence, and explicit missing/version-gap facts without enabling or copying third-party files."
         },
+        "GLUE_RimworldHelpToolingLensPolicy": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-help-tooling-lens-policy.json",
+          "schema": "definition://rimworld-help-tooling-lens-policy",
+          "description": "Declares the primary Glue routes, sanctioned capacity-safe fallbacks, forbidden bypasses, and receipt fields that prevent a fallback from being mistaken for editor or native validation."
+        },
         "GLUE_RimworldMountSessions": {
           "type": "mutable-map",
           "description": "In-memory host-side retention for the current RimWorld colony mount heartbeat. Records are projections, never gameplay authority.",

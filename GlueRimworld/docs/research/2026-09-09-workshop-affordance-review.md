@@ -54,6 +54,18 @@ metadata lack 1.6 evidence; Better Pawn Control is `missing-payload`. The receip
 confirms `thirdPartyFilesCopied=false`, so this review remains metadata-only and does
 not turn the live Steam installation into a mod test profile.
 
+### Lens-bypass audit
+
+The first pass used three sanctioned-but-non-equivalent fallbacks: direct inspection
+of Steam's cache instead of executing the Glue SteamCMD command-plan, a local
+structural scanner instead of a Glue receipt, and direct bounded-host HTTP execution
+instead of the full editor lifecycle. Those routes were useful under the unavailable
+host hook, but they were too easy to mistake for primary-lens proof. The companion
+`Seeds/rimworld-help-tooling-lens-policy.json` now declares the primary routes,
+fallback evidence, forbidden substitutions, and required equivalence/deferred-gate
+fields. Future receipts must say which route ran; a cache hit can no longer imply a
+subscription, and a host assertion can no longer imply editor validation.
+
 ## What the community implementations teach us
 
 The strongest common pattern is a four-layer boundary:

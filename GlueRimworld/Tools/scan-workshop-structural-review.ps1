@@ -3,7 +3,9 @@ param(
   [Parameter(Mandatory = $true)]
   [string]$WorkshopRoot,
   [string]$CatalogPath = '',
-  [string]$ReviewPlanPath = ''
+  [string]$ReviewPlanPath = '',
+  [ValidateSet('glue-steamcmd', 'steam-cache-fallback', 'source-checkout-fallback')]
+  [string]$AcquisitionMode = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -34,6 +36,16 @@ function Get-RelativePath([string]$BasePath, [string]$Path) {
 $catalog = Get-Content -Raw -LiteralPath (Resolve-Path -LiteralPath $CatalogPath) | ConvertFrom-Json
 $plan = Get-Content -Raw -LiteralPath (Resolve-Path -LiteralPath $ReviewPlanPath) | ConvertFrom-Json
 $root = [IO.Path]::GetFullPath((Resolve-Path -LiteralPath $WorkshopRoot))
+$policyPath = Join-Path $PSScriptRoot '..\Seeds\rimworld-help-tooling-lens-policy.json'
+$policy = Get-Content -Raw -LiteralPath (Resolve-Path -LiteralPath $policyPath) | ConvertFrom-Json
+$selectedAcquisitionMode = if ([string]::IsNullOrWhiteSpace($AcquisitionMode)) { [string]$plan.acquisitionMode } else { $AcquisitionMode }
+$fallback = $policy.sanctionedFallbacks.psobject.Properties[$selectedAcquisitionMode]
+if ($null -eq $fallback -and $selectedAcquisitionMode -ne 'glue-steamcmd') {
+  throw "acquisition mode is not declared by the help-tooling lens policy: $selectedAcquisitionMode"
+}
+if ([string]$plan.lensPolicyId -ne [string]$policy.policyId) {
+  throw 'structural review plan and help-tooling lens policy diverge'
+}
 $allowedIds = @($plan.allowedWorkshopIds | ForEach-Object { [string]$_ })
 $catalogIds = @($catalog.downloadPlan.workshopIds | ForEach-Object { [string]$_ })
 if (@(Compare-Object -ReferenceObject ($allowedIds | Sort-Object) -DifferenceObject ($catalogIds | Sort-Object)).Count -gt 0) {
@@ -59,6 +71,7 @@ foreach ($id in ($allowedIds | Sort-Object)) {
     modVersion = ''
     supportedVersions = @()
     versionDirectories = @()
+    evidenceVersion = ''
     has16Directory = $false
     fileCountsByTopLevelDirectory = [ordered]@{}
     assemblyNames = @()
@@ -96,6 +109,11 @@ foreach ($id in ($allowedIds | Sort-Object)) {
     Where-Object { $_.Name -match '^\d+\.\d+$' } |
     Select-Object -ExpandProperty Name | Sort-Object -Unique)
   $entry.has16Directory = $entry.versionDirectories -contains '1.6'
+  if ($entry.has16Directory) {
+    $entry.evidenceVersion = '1.6'
+  } elseif ($entry.versionDirectories.Count -gt 0) {
+    $entry.evidenceVersion = [string]($entry.versionDirectories | Select-Object -Last 1)
+  }
   if (-not $entry.has16Directory) {
     $entry.unavailableEvidence = @($entry.unavailableEvidence) + 'no-1.6-directory'
   }
@@ -116,8 +134,14 @@ foreach ($id in ($allowedIds | Sort-Object)) {
   $entry.fileCountsByTopLevelDirectory = $sortedCounts
   $entry.assemblyNames = @(Get-UniqueSorted ($files | Where-Object { $_.DirectoryName -match '\\Assemblies(\\|$)' -and $_.Extension -eq '.dll' } | Select-Object -ExpandProperty Name))
 
+  $evidenceFiles = @($files | Where-Object {
+    $_.Extension -eq '.xml' -and
+    ($_.FullName -like (Join-Path $modRoot 'About\*') -or
+     $_.FullName -like (Join-Path $modRoot 'LoadFolders.xml') -or
+     ($entry.evidenceVersion -and $_.FullName -like (Join-Path $modRoot "$($entry.evidenceVersion)\*")))
+  })
   $tagEvidence = @()
-  foreach ($xmlFile in ($files | Where-Object Extension -eq '.xml')) {
+  foreach ($xmlFile in $evidenceFiles) {
     try {
       $content = Get-Content -Raw -LiteralPath $xmlFile.FullName
       foreach ($token in $capabilityVocabulary) {
@@ -127,7 +151,8 @@ foreach ($id in ($allowedIds | Sort-Object)) {
     } catch { }
   }
   foreach ($token in $capabilityVocabulary) {
-    if ($files.Name -match [regex]::Escape($token)) { $tagEvidence += $token }
+    if ($files.Name -match [regex]::Escape($token) -or
+        $files.DirectoryName -match [regex]::Escape($token)) { $tagEvidence += $token }
   }
   $entry.declaredXmlTags = @(Get-UniqueSorted $tagEvidence)
   $entry.capabilityEvidence = @($entry.declaredXmlTags)
@@ -144,6 +169,13 @@ foreach ($id in ($allowedIds | Sort-Object)) {
   reviewId = [string]$plan.reviewId
   catalogId = [string]$catalog.catalogId
   scanPolicy = [string]$plan.scanPolicy
+  lensPolicyId = [string]$policy.policyId
+  primaryRoute = [string]$policy.primaryRoutes.workshopAcquisition
+  routeUsed = if ($selectedAcquisitionMode -eq 'glue-steamcmd') { [string]$policy.primaryRoutes.workshopAcquisition } else { [string]$fallback.Name }
+  fallbackUsed = ($selectedAcquisitionMode -ne 'glue-steamcmd')
+  fallbackReason = if ($selectedAcquisitionMode -eq 'glue-steamcmd') { '' } else { 'capacity-safe-local-review-or-missing-primary-route' }
+  equivalenceClaim = if ($selectedAcquisitionMode -eq 'glue-steamcmd') { 'primary-route' } else { 'bounded-fallback-not-equivalent' }
+  deferredGates = if ($selectedAcquisitionMode -eq 'steam-cache-fallback') { @('workshop-primary-download-receipt', 'editor-open-status-validate-save-close', 'native-runtime-admission') } else { @() }
   scannedWorkshopIds = @($allowedIds | Sort-Object)
   entries = @($entries | Sort-Object workshopId)
   assertions = [ordered]@{

@@ -129,4 +129,7 @@ is missing or lacks a 1.6 directory. Run the read-only scanner against Steam's c
 It emits a bounded JSON receipt containing package metadata, version directories,
 assembly names, XML capability evidence, and unavailable/review-gap facts. It does
 not enable mods, copy third-party files, launch Steam/RimWorld, or infer native
-legality from a filename.
+legality from a filename. The route is declared in
+`Seeds/rimworld-help-tooling-lens-policy.json`: this local cache mode is a sanctioned
+fallback and its receipt must say that it is not equivalent to the Glue SteamCMD lens
+or the embedded editor lifecycle.
