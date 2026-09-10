@@ -1,0 +1,62 @@
+{
+  "$schema": "definition://rimworld-workshop-structural-review",
+  "reviewId": "rimworld-workshop-structural-review-v1",
+  "runtime": "rimworld",
+  "gameAppId": "294100",
+  "catalogId": "rimworld-workshop-affordances-v1",
+  "workshopRootRelative": "steamapps/workshop/content/294100",
+  "scanPolicy": "known-catalog-payload-roots-only",
+  "allowedWorkshopIds": [
+    "1561769193",
+    "1279012058",
+    "2034960453",
+    "1541460369",
+    "730936602",
+    "836308268",
+    "2023507013"
+  ],
+  "structuralFacts": [
+    "workshopId",
+    "packageId",
+    "displayName",
+    "modVersion",
+    "supportedVersions",
+    "versionDirectories",
+    "fileCountsByTopLevelDirectory",
+    "assemblyNames",
+    "declaredXmlTags",
+    "capabilityEvidence",
+    "unavailableEvidence"
+  ],
+  "capabilityVocabulary": [
+    "NeedDef",
+    "ThinkTreeDef",
+    "JobGiver",
+    "WorkGiverDef",
+    "JobDriver",
+    "ThingDef",
+    "HediffDef",
+    "DefModExtension",
+    "ThingComp",
+    "Gizmo",
+    "Quest",
+    "MapComponent",
+    "PatchOperation",
+    "Harmony",
+    "PathFinder",
+    "Reservation",
+    "StoreUtility",
+    "MassUtility",
+    "Scribe"
+  ],
+  "receipt": {
+    "schema": "definition://rimworld-workshop-structural-review-receipt",
+    "bounded": true,
+    "requires": [
+      "known-catalog-ids-only",
+      "deterministic-ordering",
+      "missing-payloads-are-explicit",
+      "no-third-party-files-copied"
+    ]
+  }
+}

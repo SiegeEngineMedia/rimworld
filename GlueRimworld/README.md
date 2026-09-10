@@ -114,3 +114,19 @@ assertions pass and the loopback lease is released. The fixture contains semanti
 facts and revisions, never RimWorld object handles; native legality remains outside
 the fixture. This makes the harness reusable for later Pick Up And Haul, While
 You're Up, and Dubs Bad Hygiene fixtures without changing the invocation contract.
+
+## Workshop cache structural review
+
+The checked-in `Seeds/rimworld-workshop-structural-review.json` limits inspection to
+the seven IDs in the affordance catalog, including explicit evidence when a payload
+is missing or lacks a 1.6 directory. Run the read-only scanner against Steam's cache:
+
+```powershell
+.\Tools\scan-workshop-structural-review.ps1 `
+  -WorkshopRoot "C:\Program Files (x86)\Steam\steamapps\workshop\content\294100"
+```
+
+It emits a bounded JSON receipt containing package metadata, version directories,
+assembly names, XML capability evidence, and unavailable/review-gap facts. It does
+not enable mods, copy third-party files, launch Steam/RimWorld, or infer native
+legality from a filename.

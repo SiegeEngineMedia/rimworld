@@ -38,6 +38,22 @@ This gives us a clean build/test baseline: payload presence is an acquisition fa
 version-directory presence is a compatibility hint, and enabled test-profile membership
 is a separate gate. No review payload is silently enabled in the live game.
 
+The repeatable structural pass is `Tools/scan-workshop-structural-review.ps1` driven by
+`Seeds/rimworld-workshop-structural-review.json`. It scans only the catalog's known
+Workshop IDs and emits a bounded receipt with package metadata, supported-version and
+directory evidence, assembly names, declared XML capability vocabulary, and explicit
+missing/review-gap facts. This is the right pre-build lens: it can tell the Glue actor
+surface that a mechanic has `NeedDef`, `JobGiver`, `WorkGiverDef`, `ThingComp`, or
+`PatchOperation` evidence without pretending that the mechanic is legal or executable
+in the current native world.
+
+The current local receipt classifies Common Sense, Pick Up And Haul, Achtung!, Dubs
+Bad Hygiene, and Vanilla Expanded Framework as `ready-for-1.6-structural-review`;
+While You're Up is `source-or-payload-review-only` because both its cached payload and
+metadata lack 1.6 evidence; Better Pawn Control is `missing-payload`. The receipt also
+confirms `thirdPartyFilesCopied=false`, so this review remains metadata-only and does
+not turn the live Steam installation into a mod test profile.
+
 ## What the community implementations teach us
 
 The strongest common pattern is a four-layer boundary:

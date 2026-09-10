@@ -58,6 +58,12 @@
           "schema": "definition://mod-affordance-review-catalog",
           "description": "Declarative Steam Workshop review set. It records source-backed mechanics, native authority boundaries, and candidate Glue projections without importing third-party implementation code."
         },
+        "GLUE_RimworldWorkshopStructuralReview": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-workshop-structural-review.json",
+          "schema": "definition://rimworld-workshop-structural-review",
+          "description": "Bounded structural review contract for only the catalog's known Workshop payload roots; emits metadata, capability evidence, and explicit missing/version-gap facts without enabling or copying third-party files."
+        },
         "GLUE_RimworldMountSessions": {
           "type": "mutable-map",
           "description": "In-memory host-side retention for the current RimWorld colony mount heartbeat. Records are projections, never gameplay authority.",
