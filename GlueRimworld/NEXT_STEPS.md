@@ -24,6 +24,11 @@ projects, admits, observes, and reconciles.
   `Seeds/rimworld-cross-corpus-affordance-map.json`. It binds the Zomboid,
   Vintage, Burn-the-Colonies, and shared Glue patterns to RimWorld example
   targets without importing their implementations.
+- `Seeds/rimworld-actors-tenant-manifest.json` now declares the same tenant shape
+  as GlueActors: shared actor runtime and domain manifests plus universal domains
+  plus a thin native extension layer. Glue now owns the canonical domain manifest
+  and GlueActors has a declared mirror entry; the generated mod copy still needs a
+  sanctioned sync/build run before it is treated as live payload.
 
 ## Required release order
 
@@ -54,6 +59,9 @@ projects, admits, observes, and reconciles.
    then need/resource-network projection. For each, prove declarative selection,
    native admission or typed rejection, receipt/readback, and save-safe semantic
    references before adding another adapter seam.
+9. Run the declared GlueActors mirror/build for the shared actor-domain manifest,
+   then run the same component-tree mount/parity fixture against GlueActors and
+   GlueRimworld before adding tenant-specific behavior.
 
 ## Remaining gates
 

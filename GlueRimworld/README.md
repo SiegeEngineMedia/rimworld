@@ -65,6 +65,10 @@ honest, disclosed limits of this pass.
   as editor-visible data: it maps Zomboid needs/logistics, Vintage control,
   Burn-the-Colonies projected affordances, and shared Glue templates onto each
   RimWorld mod target, with native admission and receipt boundaries.
+- `Seeds/rimworld-actors-tenant-manifest.json` is the RimWorld tenant composition
+  for the same shared actor component-tree architecture used by GlueActors. It
+  keeps universal domains canonical in Glue and makes RimWorld's colony-specific
+  observation/admission extensions explicit.
 - `Seeds/` holds the RimWorld-specific adapter tables (`NeedDef` -> glue need key,
   `TimeAssignmentDef` -> schedule mode, and the relocated `pawn-skill-taxonomy.json`
   that the Z-1 lane left behind) -- genuinely new content for this integration, kept

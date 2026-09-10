@@ -1,0 +1,108 @@
+{
+  "$schema": "definition://actor-tenant-manifest",
+  "manifestKey": "rimworld-actors-manifest",
+  "tenantId": "glue-rimworld",
+  "editorOwner": "glue-editor",
+  "version": "1.0.0",
+  "description": "RimWorld actor tenant composed from the shared Glue actor manifest and canonical actor seed domains. Glue selects declarative candidates and workflows; RimWorld remains authoritative for Pawn facts, job legality, reservations, reachability, save lifecycle, and native execution.",
+  "sharedActorManifest": {
+    "source": "../../../glue/templates/functional/actor/manifest.json",
+    "compositionRole": "shared-actor-runtime-and-editor-template-surface",
+    "sourceOfTruth": "glue",
+    "doNotFork": true
+  },
+  "sharedActorDomainManifest": {
+    "source": "../../../glue/schemas/seeds/actors/manifest.json",
+    "compositionRole": "shared-universal-actor-domain-composition",
+    "sourceOfTruth": "glue",
+    "doNotFork": true,
+    "zomboidMirrorDeclaration": "../zomboid/GlueActors/glueactors-sync-manifest.json"
+  },
+  "universalDomains": [
+    {
+      "domain": "core",
+      "purpose": "identity, traits, needs, mood, position, timing",
+      "canonicalSeedRoots": ["schemas/seeds/actors/profiles", "schemas/seeds/actors/needs", "schemas/seeds/actors/schedule"],
+      "rimworldNativeFacts": ["Pawn.thingIDNumber", "Pawn.Name", "Need.CurLevel", "TimeAssignmentDef", "IntVec3", "Find.TickManager"]
+    },
+    {
+      "domain": "skill-training",
+      "purpose": "skill levels, learning, qualification, and work gates",
+      "canonicalSeedRoots": ["schemas/seeds/actors/colony/pawn-skill-taxonomy.json", "schemas/seeds/actors/colony/pawn-work-priorities.json"],
+      "rimworldNativeFacts": ["Pawn_SkillTracker", "SkillRecord.Level", "SkillRecord.XpSinceLastLevel", "WorkTypeDef", "WorkSettings"],
+      "nativeAuthority": "RimWorld skill and work systems decide qualification and work assignment"
+    },
+    {
+      "domain": "health",
+      "purpose": "wounds, conditions, pain, treatment, and recovery",
+      "canonicalSeedRoots": ["schemas/seeds/actors/colony/health-disease-taxonomy.json", "schemas/seeds/actors/colony/health-medical-behaviors.json"],
+      "rimworldNativeFacts": ["HediffSet", "Hediff", "HealthUtility", "DoctorCareUtility", "JobGiver_DoctorCheckup"],
+      "nativeAuthority": "Hediff, treatment, tending, and medical job admission remain native"
+    },
+    {
+      "domain": "inventory-and-logistics",
+      "purpose": "items, capacity, hauling, stockpiles, reservations, and transfer workflows",
+      "canonicalSeedRoots": ["schemas/seeds/actors/colony/hauling-behaviors.json", "schemas/seeds/actors/colony/hauling-routing-rules.json", "schemas/seeds/actors/colony/stockpile-taxonomy.json", "schemas/seeds/actors/items"],
+      "rimworldNativeFacts": ["Pawn.inventory", "Thing.stackCount", "MassUtility", "StoreUtility", "ReservationManager", "Reachability"],
+      "nativeAuthority": "Storage acceptance, reservation, pathing, and JobDriver execution remain native"
+    },
+    {
+      "domain": "community-and-social",
+      "purpose": "relationships, factions, roles, incidents, obligations, and multi-actor workflows",
+      "canonicalSeedRoots": ["schemas/seeds/actors/colony/social-factions.json", "schemas/seeds/actors/colony/social-incidents-storyteller.json", "schemas/seeds/actors/colony/squad-roles.json"],
+      "rimworldNativeFacts": ["Pawn.relations", "Pawn.guest", "Faction", "LetterStack", "LordManager", "ThoughtHandler"],
+      "nativeAuthority": "Thoughts, relations, faction state, lord jobs, and storyteller events remain native"
+    },
+    {
+      "domain": "environment-and-threat",
+      "purpose": "rooms, weather, danger, alarms, defense, and breach response",
+      "canonicalSeedRoots": ["schemas/seeds/actors/colony/zomboid-room-opportunity-profiles.json", "schemas/seeds/actors/colony/alarm-states.json", "schemas/seeds/actors/colony/defense-structures.json", "schemas/seeds/actors/colony/breach-response-behaviors.json", "schemas/seeds/actors/colony/threat-classes.json"],
+      "rimworldNativeFacts": ["Map", "Room", "RegionGrid", "ListerThings", "WeatherManager", "ThreatGrid", "LordManager"],
+      "nativeAuthority": "Room membership, region reachability, threats, and combat jobs remain native"
+    },
+    {
+      "domain": "production-and-research",
+      "purpose": "recipes, workshops, research gates, work queues, and production obligations",
+      "canonicalSeedRoots": ["schemas/seeds/actors/colony/production-workshops.json", "schemas/seeds/actors/colony/production-research-tree.json"],
+      "rimworldNativeFacts": ["Bill", "IBillGiver", "RecipeDef", "ResearchProjectDef", "WorkGiver_DoBill", "ThingFilter"],
+      "nativeAuthority": "Bill ingredient search, reservations, recipe legality, and job execution remain native"
+    }
+  ],
+  "rimworldExtensions": [
+    {
+      "extensionKey": "rimworld-native-colony",
+      "seedRoots": ["GlueRimworld/Seeds/rimworld-need-map.json", "GlueRimworld/Seeds/rimworld-schedule-map.json", "GlueRimworld/Seeds/rimworld-work-candidates.json", "GlueRimworld/Seeds/rimworld-cross-corpus-affordance-map.json"],
+      "adapterBoundary": "GlueRimworld C# observes native facts, filters declared candidates, requests native admission, and records receipts; it does not score gameplay or own persistence"
+    },
+    {
+      "extensionKey": "rimworld-workshop-affordances",
+      "seedRoots": ["GlueRimworld/Seeds/rimworld-workshop-affordance-catalog.json", "GlueRimworld/Seeds/rimworld-workshop-structural-review.json"],
+      "adapterBoundary": "Workshop mechanics are source-backed projection targets and compatibility evidence, never bundled implementation"
+    }
+  ],
+  "sharedComponentTree": {
+    "observation": ["actor.identity", "actor.needs", "actor.skills", "actor.health", "actor.inventory", "actor.position", "actor.current-job", "actor.community", "actor.world"],
+    "decision": ["actor.pressure", "actor.eligibility", "actor.behavior-candidate", "actor.affordance-proposal", "actor.workflow-plan"],
+    "execution": ["actor.native-admission", "actor.native-command", "actor.action-receipt", "actor.readback", "actor.reconciliation"],
+    "persistence": ["semantic-actor-key", "semantic-target-ref", "native-revision", "session-key", "receipt-idempotency-key"]
+  },
+  "datasourceContracts": {
+    "actorRoster": "native-pawn-observation-envelope",
+    "actorState": "shared-actor-projection-with-rimworld-extension-fields",
+    "actorRuntime": "declarative-candidate-and-workflow-dispatch-bound-by-native-admission",
+    "actorReceipts": "typed-native-admission-rejection-completion-and-reconciliation",
+    "mount": "lens://rimworld/<mapKey>"
+  },
+  "crossRuntimeParity": {
+    "same": ["semantic actor identity", "need/pressure projection shape", "candidate eligibility", "workflow intent", "native admission result", "receipt/readback", "reconnect/reconciliation"],
+    "runtimeSpecific": ["native fact acquisition", "pathing and reservation", "job/command execution", "save serialization", "UI affordance presentation", "mod dependency and version gates"],
+    "requiredProof": "same component-tree and receipt vocabulary with runtime-specific native evidence; never byte-identical gameplay state"
+  },
+  "syncPolicy": {
+    "canonicalOwner": "glue",
+    "tenantMayExtend": true,
+    "tenantMayOverrideUniversalFields": false,
+    "nativePackagePolicy": "copy-or-generate only through a declared build manifest; never hand-edit mirrored shared seeds",
+    "unsupportedBehavior": "remain declared but fail closed until a native admission and readback contract exists"
+  }
+}

@@ -70,6 +70,12 @@
           "schema": "definition://cross-runtime-affordance-map",
           "description": "Declarative synthesis mapping Glue, GlueZomboid, Vintage actors, and Burn the Colonies concepts onto RimWorld Workshop mechanics, native admission seams, and publishable acceptance fixtures."
         },
+        "GLUE_RimworldActorsTenantManifest": {
+          "type": "seed-catalog",
+          "seed": "Seeds/rimworld-actors-tenant-manifest.json",
+          "schema": "definition://actor-tenant-manifest",
+          "description": "RimWorld's editor-visible actor tenant composition. It reuses the shared Glue actor manifest and universal seed domains, then adds only RimWorld-native colony extensions and adapter boundaries."
+        },
         "GLUE_RimworldHelpToolingLensPolicy": {
           "type": "seed-catalog",
           "seed": "Seeds/rimworld-help-tooling-lens-policy.json",
